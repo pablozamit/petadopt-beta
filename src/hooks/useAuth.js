@@ -1,115 +1,104 @@
-import { useState, useEffect, useContext, createContext } from 'react';
-import { useLocalStorage } from './useLocalStorage';
-import { STORAGE_KEYS } from '../utils/constants';
+import React, { useState, useEffect, useContext, createContext } from 'react';
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut 
+} from 'firebase/auth';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../firebaseConfig';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth debe ser utilizado dentro de un AuthProvider');
   }
   return context;
 };
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useLocalStorage(STORAGE_KEYS.AUTH_TOKEN, false);
-  const [shelterInfo, setShelterInfo] = useLocalStorage(STORAGE_KEYS.SHELTER_INFO, null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate checking authentication status
-    const checkAuth = async () => {
-      try {
-        // In a real app, you would validate the token with your backend
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        logout();
-        setIsLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true);
+      if (currentUser) {
+        setUser(currentUser);
+        // Obtener datos adicionales de Firestore
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          setUserData(userDocSnap.data());
+        } else {
+          // Opcional: manejar el caso donde el usuario de Auth existe
+          // pero no tiene un documento en Firestore.
+          console.warn("No se encontró documento en Firestore para el usuario:", currentUser.uid);
+          setUserData(null);
+        }
+      } else {
+        setUser(null);
+        setUserData(null);
       }
-    };
+      setLoading(false);
+    });
 
-    checkAuth();
+    // Limpiar la suscripción al desmontar el componente
+    return () => unsubscribe();
   }, []);
 
-  const login = async (credentials) => {
-    try {
-      setIsLoading(true);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock authentication - in real app, this would be an API call
-      const mockCredentials = {
-        email: 'refugio@ejemplo.com',
-        password: 'refugio123'
-      };
-
-      if (credentials.email === mockCredentials.email && 
-          credentials.password === mockCredentials.password) {
-        
-        const mockShelterInfo = {
-          id: 'shelter_001',
-          name: 'Refugio Esperanza',
-          email: credentials.email
-        };
-
-        setIsAuthenticated(true);
-        setShelterInfo(mockShelterInfo);
-        
-        return { success: true };
-      } else {
-        throw new Error('Credenciales incorrectas');
-      }
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Error de autenticación' 
-      };
-    } finally {
-      setIsLoading(false);
-    }
+  const login = (email, password) => {
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const register = async (userData) => {
+  const register = async (email, password, additionalData = {}) => {
     try {
-      setIsLoading(true);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock registration success
-      return { success: true };
+      // 1. Crear usuario en Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const newUser = userCredential.user;
+
+      // 2. Crear documento en Firestore
+      const userDocRef = doc(db, 'users', newUser.uid);
+      await setDoc(userDocRef, {
+        uid: newUser.uid,
+        email: newUser.email,
+        createdAt: serverTimestamp(),
+        ...additionalData,
+      });
+
+      return userCredential;
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.message || 'Error en el registro' 
-      };
-    } finally {
-      setIsLoading(false);
+      // Manejar errores (e.g., email ya en uso)
+      console.error("Error en el registro:", error);
+      throw error;
     }
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    setShelterInfo(null);
-  };
-
-  const updateShelterInfo = (newInfo) => {
-    setShelterInfo(prev => ({ ...prev, ...newInfo }));
+    return signOut(auth);
   };
 
   const value = {
-    isAuthenticated,
-    shelterInfo,
-    isLoading,
+    user,
+    userData,
+    loading,
     login,
     register,
     logout,
-    updateShelterInfo
   };
+
+  // Muestra un spinner a pantalla completa mientras se verifica el estado de autenticación
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background-light">
+        <LoadingSpinner text="Verificando sesión..." size="lg" />
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={value}>
