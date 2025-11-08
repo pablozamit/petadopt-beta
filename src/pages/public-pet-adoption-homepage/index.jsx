@@ -223,6 +223,9 @@ const PublicPetAdoptionHomepage = () => {
             <p className="text-lg sm:text-xl text-text-secondary mb-8 max-w-2xl mx-auto">
               Encuentra tu compañero perfecto entre miles de mascotas que buscan un hogar amoroso en toda España.
             </p>
+            <p className="text-lg sm:text-xl text-text-secondary mb-8 max-w-3xl mx-auto">
+              Ayudo a protectoras de animales y profesionales del mundo animal a ganar visibilidad y conectar con más personas para que cada perro encuentre un hogar y ellos puedan vivir de su pasión.
+            </p>
           </div>
         </div>
       </section>
