@@ -3,23 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import Icon from 'components/AppIcon';
 import { db } from '@/firebaseConfig';
-import { useFilters } from './components/FiltersContext';
+// Importamos el Provider y el Hook del archivo que acabamos de crear
+import { FiltersProvider, useFilters } from './components/FiltersContext';
 import AdvancedFilterBar from './components/AdvancedFilterBar';
 import PetCard from './components/PetCard';
-import HeroSection from './components/HeroSection'; // Asegúrate de que este componente exista o úsalo integrado
+import HeroSection from './components/HeroSection';
 
-const PublicPetAdoptionHomepage = () => {
+// Componente interno que contiene la lógica de la página
+const PublicPetAdoptionContent = () => {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [noResults, setNoResults] = useState(false);
-  const filters = useFilters();
+  const filters = useFilters(); // Ahora sí funcionará porque está dentro del Provider
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPets = async () => {
       try {
         setLoading(true);
-        // Consulta base: mascotas activas ordenadas por fecha
+        // Consulta base a Firebase
         let q = query(
           collection(db, 'pets'),
           where('status', '==', 'active'),
@@ -30,10 +32,7 @@ const PublicPetAdoptionHomepage = () => {
         const snapshot = await getDocs(q);
         let allPets = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-        // Filtrado en cliente (Client-side filtering)
-        // Nota: Firebase tiene limitaciones para filtrar por múltiples campos a la vez sin índices compuestos.
-        // Para este MVP, filtramos en memoria los resultados recientes.
-        
+        // Filtrado en cliente según los criterios del PDF
         if (filters.age && filters.age.length > 0) {
           allPets = allPets.filter((pet) => filters.age.includes(pet.age));
         }
@@ -42,9 +41,8 @@ const PublicPetAdoptionHomepage = () => {
           allPets = allPets.filter((pet) => filters.size.includes(pet.size));
         }
 
-        // Si tuviéramos filtro de provincia en el contexto, lo aplicaríamos aquí también
-        if (filters.province) {
-           allPets = allPets.filter(pet => pet.province === filters.province);
+        if (filters.species) {
+           allPets = allPets.filter(pet => pet.species === filters.species);
         }
 
         setPets(allPets);
@@ -57,7 +55,7 @@ const PublicPetAdoptionHomepage = () => {
     };
 
     fetchPets();
-  }, [filters]); // Se re-ejecuta cuando cambian los filtros
+  }, [filters]);
 
   if (loading) {
     return (
@@ -72,24 +70,21 @@ const PublicPetAdoptionHomepage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* 1. Hero Section (Importado o inline) */}
       <HeroSection />
 
-      {/* 2. Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 -mt-8 relative z-10">
         
-        {/* Barra de Filtros Avanzada */}
+        {/* Barra de Filtros */}
         <div className="mb-10">
           <AdvancedFilterBar petsCount={pets.length} noResults={noResults} />
         </div>
 
-        {/* Resultados: Grid de Mascotas */}
+        {/* Grid de Resultados */}
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-heading font-bold text-text-primary">
                     Mascotas en adopción
                 </h2>
-                {/* Opcional: Ordenar por... */}
             </div>
 
             {pets.length > 0 ? (
@@ -114,6 +109,15 @@ const PublicPetAdoptionHomepage = () => {
         </div>
       </main>
     </div>
+  );
+};
+
+// Componente Principal que exportamos envuelto en el Provider
+const PublicPetAdoptionHomepage = () => {
+  return (
+    <FiltersProvider>
+      <PublicPetAdoptionContent />
+    </FiltersProvider>
   );
 };
 
