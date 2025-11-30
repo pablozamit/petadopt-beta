@@ -4,7 +4,7 @@ import Icon from '../AppIcon';
 
 const AdaptiveHeader = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userType, setUserType] = useState(null); // 'shelter', 'professional', 'admin'
+  const [userType, setUserType] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
@@ -12,7 +12,6 @@ const AdaptiveHeader = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Detectar tipo de usuario desde localStorage
     const shelterAuth = localStorage.getItem('isAuthenticated') === 'true';
     const professionalAuth = localStorage.getItem('isProfessional') === 'true';
     const adminAuth = localStorage.getItem('isAdmin') === 'true';
@@ -44,20 +43,18 @@ const AdaptiveHeader = () => {
     if (userType === 'professional') {
       localStorage.removeItem('isProfessional');
       localStorage.removeItem('professionalInfo');
-      navigate('/professionals');
     } else if (userType === 'admin') {
       localStorage.removeItem('isAdmin');
       localStorage.removeItem('adminInfo');
-      navigate('/');
     } else {
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('shelterInfo');
-      navigate('/');
     }
     setIsAuthenticated(false);
     setUserType(null);
     setUserInfo(null);
     setIsMobileMenuOpen(false);
+    navigate('/');
   };
 
   const handleNavigation = (path) => {
@@ -67,20 +64,11 @@ const AdaptiveHeader = () => {
   };
 
   const handleLogoClick = () => {
-    if (userType === 'admin') {
-      navigate('/admin-panel');
-    } else if (userType === 'professional') {
-      navigate('/professional-panel');
-    } else if (userType === 'shelter') {
-      navigate('/shelter-dashboard');
-    } else {
-      navigate('/');
-    }
+    if (userType === 'admin') navigate('/admin-panel');
+    else if (userType === 'professional') navigate('/professional-panel');
+    else if (userType === 'shelter') navigate('/shelter-dashboard');
+    else navigate('/');
     setIsMobileMenuOpen(false);
-  };
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const getDisplayName = (name) => {
@@ -123,7 +111,7 @@ const AdaptiveHeader = () => {
           <div className="hidden md:flex items-center space-x-6">
             {!isAuthenticated ? (
               <>
-                {/* Directorios públicos */}
+                {/* 3 DIRECTORIOS */}
                 <button
                   onClick={() => handleNavigation('/')}
                   className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200 ${
@@ -132,6 +120,16 @@ const AdaptiveHeader = () => {
                 >
                   <Icon name="Home" size={18} />
                   <span>Mascotas</span>
+                </button>
+
+                <button
+                  onClick={() => handleNavigation('/shelters')}
+                  className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-accent-50 transition-all duration-200 ${
+                    location.pathname === '/shelters' ? 'text-accent font-semibold' : ''
+                  }`}
+                >
+                  <Icon name="Building2" size={18} />
+                  <span>Refugios</span>
                 </button>
 
                 <button
@@ -144,19 +142,32 @@ const AdaptiveHeader = () => {
                   <span>Profesionales</span>
                 </button>
 
-                {/* Login Dropdown */}
+                {/* LOGIN/REGISTRO Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setShowLoginDropdown(!showLoginDropdown)}
-                    className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-accent-50 transition-all duration-200"
+                    className="btn-primary flex items-center space-x-2 px-5 py-2 rounded-lg"
                   >
-                    <Icon name="LogIn" size={18} />
-                    <span>Iniciar Sesión</span>
+                    <Icon name="User" size={18} />
+                    <span>Acceder</span>
                     <Icon name={showLoginDropdown ? "ChevronUp" : "ChevronDown"} size={16} />
                   </button>
 
                   {showLoginDropdown && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-border-light py-2 z-50">
+                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-border-light py-2 z-50">
+                      <button
+                        onClick={() => handleNavigation('/authentication-login-register')}
+                        className="w-full text-left px-4 py-3 hover:bg-surface transition-colors flex items-center space-x-3"
+                      >
+                        <Icon name="Heart" size={18} className="text-accent" />
+                        <div>
+                          <div className="font-medium text-text-primary">Soy Adoptante</div>
+                          <div className="text-xs text-text-secondary">Busco una mascota</div>
+                        </div>
+                      </button>
+
+                      <div className="border-t border-border-light my-1"></div>
+
                       <button
                         onClick={() => handleNavigation('/authentication-login-register')}
                         className="w-full text-left px-4 py-3 hover:bg-primary-50 transition-colors flex items-center space-x-3"
@@ -164,7 +175,7 @@ const AdaptiveHeader = () => {
                         <Icon name="Building2" size={18} className="text-primary" />
                         <div>
                           <div className="font-medium text-text-primary">Soy Refugio</div>
-                          <div className="text-xs text-text-secondary">Gestiona tus mascotas</div>
+                          <div className="text-xs text-text-secondary">Gestiono mascotas</div>
                         </div>
                       </button>
 
@@ -178,24 +189,12 @@ const AdaptiveHeader = () => {
                           <div className="text-xs text-text-secondary">Veterinario, educador...</div>
                         </div>
                       </button>
-
-                      <button
-                        onClick={() => handleNavigation('/admin-panel')}
-                        className="w-full text-left px-4 py-3 hover:bg-error-light transition-colors flex items-center space-x-3"
-                      >
-                        <Icon name="Shield" size={18} className="text-error" />
-                        <div>
-                          <div className="font-medium text-text-primary">Administrador</div>
-                          <div className="text-xs text-text-secondary">Panel de control</div>
-                        </div>
-                      </button>
                     </div>
                   )}
                 </div>
               </>
             ) : (
               <div className="flex items-center space-x-4">
-                {/* User Info */}
                 <div className="flex items-center space-x-3 px-3 py-2 bg-surface rounded-lg">
                   <div className={`w-8 h-8 ${getUserColor()} rounded-full flex items-center justify-center`}>
                     <Icon name={getUserIcon()} size={16} color="white" />
@@ -208,7 +207,6 @@ const AdaptiveHeader = () => {
                   </div>
                 </div>
 
-                {/* Dashboard Link */}
                 <button
                   onClick={() => {
                     if (userType === 'admin') handleNavigation('/admin-panel');
@@ -221,7 +219,6 @@ const AdaptiveHeader = () => {
                   <span>Panel</span>
                 </button>
 
-                {/* Logout */}
                 <button
                   onClick={handleLogout}
                   className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-error-light hover:text-error transition-all duration-200"
@@ -236,7 +233,7 @@ const AdaptiveHeader = () => {
           {/* Mobile Menu Button */}
           <div className="md:hidden">
             <button
-              onClick={toggleMobileMenu}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface transition-all duration-200"
             >
               <Icon name={isMobileMenuOpen ? "X" : "Menu"} size={24} />
@@ -259,6 +256,14 @@ const AdaptiveHeader = () => {
                   </button>
 
                   <button
+                    onClick={() => handleNavigation('/shelters')}
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-accent hover:bg-surface"
+                  >
+                    <Icon name="Building2" size={20} />
+                    <span className="font-medium">Refugios</span>
+                  </button>
+
+                  <button
                     onClick={() => handleNavigation('/professionals')}
                     className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-secondary hover:bg-surface"
                   >
@@ -270,26 +275,26 @@ const AdaptiveHeader = () => {
 
                   <button
                     onClick={() => handleNavigation('/authentication-login-register')}
-                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-surface"
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:bg-surface"
+                  >
+                    <Icon name="Heart" size={20} />
+                    <span className="font-medium">Soy Adoptante</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleNavigation('/authentication-login-register')}
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:bg-surface"
                   >
                     <Icon name="Building2" size={20} />
-                    <span className="font-medium">Login Refugio</span>
+                    <span className="font-medium">Soy Refugio</span>
                   </button>
 
                   <button
                     onClick={() => handleNavigation('/professional-login')}
-                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-secondary hover:bg-surface"
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:bg-surface"
                   >
                     <Icon name="Stethoscope" size={20} />
-                    <span className="font-medium">Login Profesional</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleNavigation('/admin-panel')}
-                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-error hover:bg-surface"
-                  >
-                    <Icon name="Shield" size={20} />
-                    <span className="font-medium">Login Admin</span>
+                    <span className="font-medium">Soy Profesional</span>
                   </button>
                 </>
               ) : (
@@ -299,9 +304,7 @@ const AdaptiveHeader = () => {
                       <Icon name={getUserIcon()} size={18} color="white" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-medium text-text-primary">
-                        {getDisplayName(userInfo?.name)}
-                      </span>
+                      <span className="font-medium text-text-primary">{getDisplayName(userInfo?.name)}</span>
                       <span className="text-sm text-text-secondary capitalize">{userType}</span>
                     </div>
                   </div>
@@ -315,7 +318,7 @@ const AdaptiveHeader = () => {
                     className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:bg-surface"
                   >
                     <Icon name="LayoutDashboard" size={20} />
-                    <span className="font-medium">Panel de Control</span>
+                    <span className="font-medium">Panel</span>
                   </button>
 
                   <button
