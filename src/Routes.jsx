@@ -5,6 +5,7 @@ import ErrorBoundary from "components/ErrorBoundary";
 import PublicPetAdoptionHomepage from "pages/public-pet-adoption-homepage";
 import AuthenticationLoginRegister from "pages/authentication-login-register";
 import ShelterDashboard from "pages/shelter-dashboard";
+import SheltersDirectory from "pages/shelters-directory";
 import AddEditPetForm from "pages/add-edit-pet-form";
 import PetDetail from "pages/pet-detail";
 import AdopterPanel from "pages/adopter-panel";
@@ -30,6 +31,7 @@ const Routes = () => {
           <Route path="/public-pet-adoption-homepage" element={<PublicPetAdoptionHomepage />} />
           <Route path="/authentication-login-register" element={<AuthenticationLoginRegister />} />
           <Route path="/shelter-dashboard" element={<ShelterDashboard />} />
+          <Route path="/shelters" element={<SheltersDirectory />} />
           <Route path="/add-edit-pet-form" element={<AddEditPetForm />} />
           <Route path="/pet/:id" element={<PetDetail />} />
           <Route path="/adopter-panel" element={<AdopterPanel />} />
