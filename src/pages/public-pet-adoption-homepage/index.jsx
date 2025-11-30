@@ -1,405 +1,185 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/firebaseConfig';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import Icon from 'components/AppIcon';
-
+import { db } from '@/firebaseConfig';
+import { useFilters } from './components/FiltersContext';
 import AdvancedFilterBar from './components/AdvancedFilterBar';
-import PetGrid from './components/PetGrid';
-import Pagination from './components/Pagination';
-import FloatingFavoritesButton from 'components/ui/FloatingFavoritesButton';
-import NavigationBreadcrumbs from 'components/ui/NavigationBreadcrumbs';
-import QuickActionsFAB from 'components/ui/QuickActionsFAB';
+import PetCard from './components/PetCard';
 
 const PublicPetAdoptionHomepage = () => {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
   const [pets, setPets] = useState([]);
-  const [filters, setFilters] = useState({
-    search: '',
-    species: '',
-    age: '',
-    size: '',
-    province: '',
-    breed: '',
-    healthStatus: '',
-    gender: '',
-    sterilized: '',
-    tags: []
-  });
-  const [currentPage, setCurrentPage] = useState(1);
-  const petsPerPage = 27;
+  const [loading, setLoading] = useState(true);
+  const [highlightedPets, setHighlightedPets] = useState([]);
+  const [noResults, setNoResults] = useState(false);
+  const filters = useFilters();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadPets = async () => {
-      setIsLoading(true);
+    const fetchPets = async () => {
       try {
-        const petsRef = collection(db, 'pets');
-        const q = query(petsRef, where('status', '==', 'active'));
-        const querySnapshot = await getDocs(q);
-        
-        const petsData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        
-        setPets(petsData);
+        setLoading(true);
+        let q = query(
+          collection(db, 'pets'),
+          where('status', '==', 'active'),
+          orderBy('createdAt', 'desc'),
+          limit(20)
+        );
+
+        const snapshot = await getDocs(q);
+        let allPets = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+        // Aplicar filtros
+        if (filters.age?.length) {
+          allPets = allPets.filter((pet) => filters.age.includes(pet.age));
+        }
+        if (filters.size?.length) {
+          allPets = allPets.filter((pet) => filters.size.includes(pet.size));
+        }
+
+        setPets(allPets);
+        setNoResults(allPets.length === 0);
+        setHighlightedPets(allPets.slice(0, 6)); // Primeros 6 destacados
       } catch (error) {
-        console.error('Error loading pets from Firebase:', error);
-        setPets([]);
+        console.error('Error fetching pets:', error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    loadPets();
-  }, []);
+    fetchPets();
+  }, [filters]);
 
-  const filteredPets = useMemo(() => {
-    let filtered = pets;
-
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      filtered = filtered.filter(pet =>
-        pet.name?.toLowerCase().includes(searchTerm) ||
-        pet.breed?.toLowerCase().includes(searchTerm) ||
-        pet.description?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    if (filters.species) {
-      filtered = filtered.filter(pet => pet.species === filters.species);
-    }
-
-    if (filters.age) {
-      if (filters.age === 'Puppy') {
-        filtered = filtered.filter(pet => 
-          pet.age?.includes('meses') || 
-          (pet.age?.includes('año') && parseInt(pet.age) <= 1)
-        );
-      } else if (filters.age === 'Young') {
-        filtered = filtered.filter(pet => 
-          pet.age?.includes('año') && 
-          parseInt(pet.age) >= 1 && 
-          parseInt(pet.age) <= 3
-        );
-      } else if (filters.age === 'Adult') {
-        filtered = filtered.filter(pet => 
-          pet.age?.includes('año') && 
-          parseInt(pet.age) >= 3 && 
-          parseInt(pet.age) <= 7
-        );
-      } else if (filters.age === 'Senior') {
-        filtered = filtered.filter(pet => 
-          pet.age?.includes('año') && parseInt(pet.age) >= 7
-        );
-      }
-    }
-
-    if (filters.size) {
-      filtered = filtered.filter(pet => pet.size === filters.size);
-    }
-
-    if (filters.province) {
-      filtered = filtered.filter(pet => pet.province === filters.province);
-    }
-
-    if (filters.breed) {
-      filtered = filtered.filter(pet => pet.breed === filters.breed);
-    }
-
-    if (filters.healthStatus) {
-      filtered = filtered.filter(pet => pet.healthStatus === filters.healthStatus);
-    }
-
-    if (filters.gender) {
-      filtered = filtered.filter(pet => pet.gender === filters.gender);
-    }
-
-    if (filters.sterilized !== '') {
-      const isSterialized = filters.sterilized === 'true';
-      filtered = filtered.filter(pet => pet.sterilized === isSterialized);
-    }
-
-    if (filters.tags && filters.tags.length > 0) {
-      filtered = filtered.filter(pet => 
-        filters.tags.every(tag => pet.tags?.includes(tag))
-      );
-    }
-
-    return filtered;
-  }, [filters, pets]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filteredPets.length]);
-
-  const totalPages = Math.ceil(filteredPets.length / petsPerPage);
-  const startIndex = (currentPage - 1) * petsPerPage;
-  const currentPets = filteredPets.slice(startIndex, startIndex + petsPerPage);
-
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: value
-    }));
-  };
-
-  const handleResetFilters = () => {
-    setFilters({
-      search: '',
-      species: '',
-      age: '',
-      size: '',
-      province: '',
-      breed: '',
-      healthStatus: '',
-      gender: '',
-      sterilized: '',
-      tags: []
-    });
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleLogin = () => {
-    navigate('/authentication-login-register');
-  };
-
-  const handleProfessionalLogin = () => {
-    navigate('/professional-login');
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-text-secondary">Buscando compaeros perfectos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-surface border-b border-border-light shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Icon name="Heart" size={20} color="white" />
-              </div>
-              <span className="font-heading font-bold text-xl text-text-primary">
-                AdoptaEspaña
-              </span>
-            </div>
+      {/* Hero */}
+      <section className="relative overflow-hidden pt-20 pb-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <h1 className="text-5xl md:text-6xl font-heading font-bold bg-gradient-to-r from-text-primary via-primary to-secondary-500 bg-clip-text text-transparent mb-6 leading-tight">
+            El amor no se compra,<br />
+            <span className="block">se adopta</span>
+          </h1>
+          <p className="text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed">
+            Te ayudamos a encontrar al compaero que encaja de verdad con tu vida, y a que las protectoras y profesionales tengan el apoyo que necesitan.
+          </p>
 
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleLogin}
-                className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200"
-              >
-                <Icon name="Building2" size={18} />
-                <span className="hidden sm:inline">Acceso Protectoras</span>
-              </button>
-
-              <button
-                onClick={handleProfessionalLogin}
-                className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-secondary-50 transition-all duration-200"
-              >
-                <Icon name="UserCheck" size={18} />
-                <span className="hidden sm:inline">Acceso Profesionales</span>
-              </button>
-
-              <button
-                onClick={() => navigate('/professionals')}
-                className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200"
-              >
-                <Icon name="Search" size={18} />
-                <span className="hidden sm:inline">Directorio Profesional</span>
-              </button>
-              
-              <button
-                onClick={() => navigate('/adopter-panel')}
-                className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200"
-              >
-                <Icon name="User" size={18} />
-                <span className="hidden sm:inline">Mi Panel</span>
+          {/* Buscador */}
+          <div className="max-w-md mx-auto mb-12">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                placeholder="Perro, gato, conejo"
+                className="flex-1 px-5 py-4 rounded-xl border border-border focus:border-primary focus:ring-4 focus:ring-primary/10 bg-surface shadow-sm"
+              />
+              <input
+                type="text"
+                placeholder="Ciudad o provincia"
+                className="flex-1 px-5 py-4 rounded-xl border border-border focus:border-primary focus:ring-4 focus:ring-primary/10 bg-surface shadow-sm"
+              />
+              <button className="btn-primary px-8 py-4 rounded-xl flex items-center gap-3 font-bold text-lg shadow-lg hover:shadow-xl transition-all">
+                <Icon name="Search" size={20} />
+                Encontrar mi compaero
               </button>
             </div>
           </div>
-        </div>
-      </header>
 
-      <NavigationBreadcrumbs />
-
-      <section className="relative bg-gradient-to-br from-primary-50 to-secondary-50 py-16 lg:py-24 overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold text-text-primary mb-6 leading-tight">
-              Adopta una mascota{' '}
-              <span className="text-primary">cerca de ti</span>
-            </h1>
-            
-            <p className="text-lg sm:text-xl text-text-secondary mb-8 max-w-2xl mx-auto">
-              Encuentra tu compañero perfecto entre miles de mascotas que buscan un hogar amoroso en toda España.
-            </p>
-            <p className="text-lg sm:text-xl text-text-secondary mb-8 max-w-3xl mx-auto">
-              Ayudo a protectoras de animales y profesionales del mundo animal a ganar visibilidad y conectar con más personas para que cada perro encuentre un hogar y ellos puedan vivir de su pasión.
-            </p>
+          {/* CTAs Hero */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto">
+            <button className="btn-primary px-10 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-xl w-full sm:w-auto">
+              Ver animales en adopcin
+            </button>
+            <button className="btn-outline px-10 py-4 rounded-xl text-lg font-bold w-full sm:w-auto">
+              Soy protectora profesional
+            </button>
           </div>
         </div>
       </section>
 
-      <AdvancedFilterBar 
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onResetFilters={handleResetFilters}
-        resultsCount={filteredPets.length}
-      />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <PetGrid 
-          pets={currentPets}
-          isLoading={isLoading}
-        />
-
-        {!isLoading && filteredPets.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            totalResults={filteredPets.length}
-            resultsPerPage={petsPerPage}
-          />
-        )}
-
-        {!isLoading && filteredPets.length === 0 && (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Icon name="Search" size={48} className="text-primary" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-20">
+        {/* Seccin 2: Cmo funciona */}
+        <section id="how-it-works" className="text-center">
+          <h2 className="text-4xl md:text-5xl font-heading font-bold text-text-primary mb-6">
+            Cmo funciona AdoptaMascotas?
+          </h2>
+          <p className="text-xl text-text-secondary max-w-2xl mx-auto mb-16 leading-relaxed">
+            Hacemos fcil lo que antes era un lo: ver, elegir y acompaar.
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center group">
+              <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
+                <Icon name="Search" size={24} className="text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-text-primary mb-4">1. Descubre</h3>
+              <p className="text-text-secondary">
+                Filtra por tipo de animal, edad, tamao y ubicacin. Encuentra animales que encajan con tu hogar y tu ritmo de vida.
+              </p>
             </div>
-            <h3 className="text-xl font-heading font-semibold text-text-primary mb-4">
-              No se encontraron mascotas
-            </h3>
-            <p className="text-text-secondary mb-6 max-w-md mx-auto">
-              No hay mascotas que coincidan con tus filtros actuales. 
-              Intenta ajustar los criterios de búsqueda.
+            <div className="text-center group">
+              <div className="w-20 h-20 bg-secondary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:bg-secondary/20 transition-colors">
+                <Icon name="MessageCircle" size={24} className="text-secondary" />
+              </div>
+              <h3 className="text-2xl font-bold text-text-primary mb-4">2. Conecta</h3>
+              <p className="text-text-secondary">
+                Habla directamente con la protectora y resuelve tus dudas. Recibe informacin clara sobre carcter, salud y necesidades.
+              </p>
+            </div>
+            <div className="text-center group">
+              <div className="w-20 h-20 bg-accent/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:bg-accent/20 transition-colors">
+                <Icon name="HeartHandshake" size={24} className="text-accent" />
+              </div>
+              <h3 className="text-2xl font-bold text-text-primary mb-4">3. Acompaa</h3>
+              <p className="text-text-secondary">
+                No te dejamos solo despus de la adopcin. Accede a consejos de veterinarios, educadores y otros adoptantes.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Seccin 3: Animales destacados */}
+        <section>
+          <div className="flex items-center justify-between mb-12">
+            <h2 className="text-4xl md:text-5xl font-heading font-bold text-text-primary">
+              Peludos que ahora mismo buscan una familia
+            </h2>
+            <p className="text-lg text-text-secondary">
+              Estas son solo algunas de las historias que pueden empezar contigo.
             </p>
-            <button
-              onClick={handleResetFilters}
-              className="btn-outline"
-            >
-              Limpiar filtros
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {highlightedPets.map((pet) => (
+              <PetCard key={pet.id} pet={pet} />
+            ))}
+          </div>
+          <div className="text-center mt-12">
+            <button className="btn-primary px-12 py-4 rounded-xl text-lg font-bold">
+              Ver todos los animales en adopcin
             </button>
           </div>
+        </section>
+
+        {/* Filtros */}
+        <AdvancedFilterBar petsCount={pets.length} noResults={noResults} />
+
+        {/* Lista completa (si no filtros) */}
+        {!noResults && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {pets.map((pet) => (
+              <PetCard key={pet.id} pet={pet} />
+            ))}
+          </div>
         )}
-      </main>
-
-      <FloatingFavoritesButton />
-      <QuickActionsFAB />
-
-      <footer className="bg-surface border-t border-border-light mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <Icon name="Heart" size={20} color="white" />
-                </div>
-                <span className="font-heading font-bold text-xl text-text-primary">
-                  AdoptaEspaña
-                </span>
-              </div>
-              <p className="text-text-secondary">
-                Conectando protectoras con familias amorosas para dar una segunda oportunidad a las mascotas.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-heading font-semibold text-text-primary mb-4">
-                Para Protectoras
-              </h4>
-              <ul className="space-y-2">
-                <li>
-                  <button
-                    onClick={handleLogin}
-                    className="text-text-secondary hover:text-primary transition-colors duration-200"
-                  >
-                    Registrar Protectora
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={handleLogin}
-                    className="text-text-secondary hover:text-primary transition-colors duration-200"
-                  >
-                    Subir Mascotas
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-heading font-semibold text-text-primary mb-4">
-                Profesionales
-              </h4>
-              <ul className="space-y-2">
-                <li>
-                  <button
-                    onClick={() => navigate('/professionals')}
-                    className="text-text-secondary hover:text-primary transition-colors duration-200"
-                  >
-                    Directorio
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => navigate('/professional-register')}
-                    className="text-text-secondary hover:text-primary transition-colors duration-200"
-                  >
-                    Registrar Negocio
-                  </button>
-                </li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-heading font-semibold text-text-primary mb-4">
-                Contacto
-              </h4>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2 text-text-secondary">
-                  <Icon name="Mail" size={16} />
-                  <span>info@adoptaespana.com</span>
-                </div>
-                <div className="flex items-center space-x-2 text-text-secondary">
-                  <Icon name="Phone" size={16} />
-                  <span>+34 900 123 456</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-border-light mt-8 pt-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
-                <h5 className="font-heading font-semibold text-text-primary">
-                  Páginas legales
-                </h5>
-                <div className="flex flex-wrap gap-4">
-                  <a href="/politica-cookies" className="text-text-secondary hover:text-primary transition-colors duration-200 text-sm">
-                    Política de cookies
-                  </a>
-                  <a href="/politica-privacidad" className="text-text-secondary hover:text-primary transition-colors duration-200 text-sm">
-                    Política de privacidad
-                  </a>
-                  <a href="/terminos-condiciones" className="text-text-secondary hover:text-primary transition-colors duration-200 text-sm">
-                    Términos y Condiciones de uso
-                  </a>
-                </div>
-              </div>
-              
-              <p className="text-text-muted text-sm">
-                © {new Date().getFullYear()} AdoptaEspaña. Todos los derechos reservados.
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 };
