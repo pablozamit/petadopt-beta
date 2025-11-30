@@ -2,8 +2,9 @@ import React from 'react';
 import Icon from 'components/AppIcon';
 
 const PetFormFields = ({ formData, errors, onChange }) => {
+  // Opciones sincronizadas con el PDF
   const ageOptions = [
-    { value: 'puppy', label: 'Cachorro (0-1 año)' },
+    { value: 'puppy_junior', label: 'Cachorro / Junior (0-1 año)' },
     { value: 'young', label: 'Joven (1-3 años)' },
     { value: 'adult', label: 'Adulto (3-7 años)' },
     { value: 'senior', label: 'Senior (+7 años)' }
@@ -16,10 +17,10 @@ const PetFormFields = ({ formData, errors, onChange }) => {
   ];
 
   const sizeOptions = [
-    { value: 'small', label: 'Pequeño (<10kg)', description: 'Ideal para apartamentos' },
-    { value: 'medium', label: 'Mediano (10-25kg)', description: 'Tamaño equilibrado' },
-    { value: 'large', label: 'Grande (25-40kg)', description: 'Necesita espacio amplio' },
-    { value: 'giant', label: 'Gigante (>40kg)', description: 'Requiere mucho espacio' }
+    { value: 'small', label: 'Pequeño', description: 'Hasta 10 kg (Ej: Yorkshire, Gatos)' },
+    { value: 'medium', label: 'Mediano', description: '10-25 kg (Ej: Beagle)' },
+    { value: 'large', label: 'Grande', description: '25-40 kg (Ej: Pastor Alemán)' },
+    { value: 'giant', label: 'Muy grande', description: '+40 kg (Ej: Mastín)' }
   ];
 
   const spanishProvinces = [
