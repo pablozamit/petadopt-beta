@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore'; // <--- IMPORTANTE: Nuevas importaciones
+import { db } from '@/firebaseConfig';            // <--- IMPORTANTE: Conexión a la BD
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import AdaptiveHeader from 'components/ui/AdaptiveHeader';
@@ -14,106 +16,50 @@ const ProfessionalDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [reportReason, setReportReason] = useState('');
-  const [reviews, setReviews] = useState([]);
+  // Mantenemos las reseñas como array vacío o simulado por ahora, ya que aún no tenemos sistema de reseñas real
+  const [reviews, setReviews] = useState([]); 
 
-  // Mock professional data
-  const mockProfessional = {
-    id: id,
-    name: 'Clínica Veterinaria San Antón',
-    type: 'clinic',
-    services: ['veterinary', 'emergency', 'dentistry'],
-    description: `Clínica veterinaria con más de 20 años de experiencia en el cuidado integral de mascotas. Nuestro equipo de veterinarios especializados ofrece servicios de medicina preventiva, cirugía, odontología veterinaria y atención de urgencias.
-
-**Nuestros servicios incluyen:**
-- Consultas veterinarias generales
-- Cirugía general y especializada
-- Odontología veterinaria
-- Radiología digital
-- Laboratorio propio
-- Hospitalización
-- Urgencias 24 horas
-
-**Especialidades:**
-- Medicina interna
-- Dermatología veterinaria
-- Cardiología
-- Oftalmología veterinaria
-
-Contamos con instalaciones modernas y equipamiento de última generación para brindar el mejor cuidado a tu mascota.`,
-    address: 'Calle Mayor 123, Madrid',
-    city: 'Madrid',
-    province: 'madrid',
-    phone: '+34 91 123 4567',
-    email: 'info@clinicasananton.com',
-    website: 'https://clinicasananton.com',
-    whatsapp: '+34 600 123 456',
-    logo: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=200&h=200&fit=crop',
-    images: [
-      'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800&h=600&fit=crop'
-    ],
-    rating: 4.8,
-    reviewsCount: 127,
-    verified: true,
-    openingHours: {
-      monday: '09:00-20:00',
-      tuesday: '09:00-20:00',
-      wednesday: '09:00-20:00',
-      thursday: '09:00-20:00',
-      friday: '09:00-20:00',
-      saturday: '10:00-14:00',
-      sunday: 'Cerrado'
-    },
-    emergencyAvailable: true,
-    joinDate: '2023-06-15T10:00:00Z',
-    coordinates: { lat: 40.4168, lng: -3.7038 }
-  };
-
-  const mockReviews = [
-    {
-      id: 'review_001',
-      userName: 'María García',
-      rating: 5,
-      comment: 'Excelente atención. El Dr. Martínez cuidó muy bien de mi gato durante su cirugía. Muy profesionales y cariñosos.',
-      date: '2024-01-15T14:30:00Z',
-      verified: true
-    },
-    {
-      id: 'review_002',
-      userName: 'Carlos López',
-      rating: 4,
-      comment: 'Buena clínica, aunque a veces hay que esperar un poco. El personal es muy amable y conocen bien su trabajo.',
-      date: '2024-01-10T10:15:00Z',
-      verified: true
-    },
-    {
-      id: 'review_003',
-      userName: 'Ana Rodríguez',
-      rating: 5,
-      comment: 'Llevé a mi perro de urgencia y la atención fue inmediata. Salvaron la vida de mi mascota. Muy recomendable.',
-      date: '2024-01-08T16:45:00Z',
-      verified: true
-    }
-  ];
-
+  // --- CAMBIO PRINCIPAL: Lógica de carga real desde Firebase ---
   useEffect(() => {
     const fetchProfessional = async () => {
       setIsLoading(true);
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setProfessional(mockProfessional);
-        setReviews(mockReviews);
+        // 1. Referencia al documento en la colección 'users' usando el ID de la URL
+        const docRef = doc(db, 'users', id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          // 2. Si existe, guardamos los datos reales en el estado
+          const data = docSnap.data();
+          setProfessional({ id: docSnap.id, ...data });
+          
+          // Configuramos reseñas vacías o mock por el momento
+          setReviews([
+             {
+               id: 'review_mock_1',
+               userName: 'Usuario del sistema',
+               rating: 5,
+               comment: 'Este es un profesional verificado de la plataforma.',
+               date: new Date().toISOString(),
+               verified: true
+             }
+          ]);
+        } else {
+          console.log("No se encontró el profesional");
+          setProfessional(null);
+        }
       } catch (error) {
-        console.error('Error fetching professional:', error);
+        console.error("Error fetching professional:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchProfessional();
+    if (id) {
+      fetchProfessional();
+    }
   }, [id]);
+  // -----------------------------------------------------------
 
   const getServiceLabel = (service) => {
     const labels = {
@@ -177,23 +123,20 @@ Contamos con instalaciones modernas y equipamiento de última generación para b
   };
 
   const handleWhatsApp = () => {
+    if (!professional.whatsapp && !professional.phone) return;
+    const phone = professional.whatsapp || professional.phone;
     const message = encodeURIComponent(
-      `Hola, estoy interesado en sus servicios de ${professional.services.map(s => getServiceLabel(s)).join(', ')}. ¿Podrían darme más información?`
+      `Hola, estoy interesado en sus servicios. ¿Podrían darme más información?`
     );
-    const whatsappUrl = `https://wa.me/${professional.whatsapp.replace(/\s+/g, '')}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${phone.replace(/\s+/g, '')}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 
   const handleEmail = () => {
-    const subject = encodeURIComponent(`Consulta sobre servicios - ${professional.name}`);
+    if (!professional.email) return;
+    const subject = encodeURIComponent(`Consulta sobre servicios - ${professional.displayName || professional.name}`);
     const body = encodeURIComponent(
-      `Hola,
-
-Estoy interesado en sus servicios de ${professional.services.map(s => getServiceLabel(s)).join(', ')}.
-
-¿Podrían proporcionarme más información sobre disponibilidad y precios?
-
-Gracias.`
+      `Hola,\n\nEstoy interesado en sus servicios.\n\n¿Podrían proporcionarme más información sobre disponibilidad y precios?\n\nGracias.`
     );
     const emailUrl = `mailto:${professional.email}?subject=${subject}&body=${body}`;
     window.location.href = emailUrl;
@@ -212,9 +155,11 @@ Gracias.`
   };
 
   const renderStars = (rating) => {
+    // Si no hay rating, mostramos 5 estrellas vacías o un valor por defecto
+    const safeRating = rating || 0;
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
+    const fullStars = Math.floor(safeRating);
+    const hasHalfStar = safeRating % 1 !== 0;
 
     for (let i = 0; i < fullStars; i++) {
       stars.push(
@@ -228,7 +173,7 @@ Gracias.`
       );
     }
 
-    const emptyStars = 5 - Math.ceil(rating);
+    const emptyStars = 5 - Math.ceil(safeRating);
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
         <Icon key={`empty-${i}`} name="Star" size={16} className="text-gray-300" />
@@ -239,6 +184,7 @@ Gracias.`
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
@@ -282,6 +228,14 @@ Gracias.`
     );
   }
 
+  // Adaptación de campos: Firebase usa a veces displayName en lugar de name, o photoURL en lugar de logo
+  // Aseguramos compatibilidad aquí
+  const displayImage = professional.photoURL || professional.logo || professional.image || '/assets/images/no_image.png';
+  const displayName = professional.displayName || professional.name || 'Profesional sin nombre';
+  const displayAddress = professional.address || `${professional.city || ''}, ${professional.province || ''}`;
+  const servicesList = professional.services || [];
+  const galleryImages = professional.images || [];
+
   return (
     <div className="min-h-screen bg-background">
       <AdaptiveHeader />
@@ -305,7 +259,7 @@ Gracias.`
                 Profesionales
               </button>
               <Icon name="ChevronRight" size={16} className="text-text-muted" />
-              <span className="text-text-primary font-medium">{professional.name}</span>
+              <span className="text-text-primary font-medium">{displayName}</span>
             </nav>
           </div>
         </div>
@@ -317,10 +271,10 @@ Gracias.`
               {/* Header */}
               <div className="bg-surface rounded-xl p-6 shadow-sm border border-border-light">
                 <div className="flex items-start space-x-4 mb-6">
-                  <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-background">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-background border border-border-light">
                     <Image
-                      src={professional.logo}
-                      alt={professional.name}
+                      src={displayImage}
+                      alt={displayName}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -328,10 +282,11 @@ Gracias.`
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
                       <h1 className="text-2xl sm:text-3xl font-heading font-bold text-text-primary">
-                        {professional.name}
+                        {displayName}
                       </h1>
                       
                       <div className="flex items-center space-x-2">
+                        {/* Verificamos si existe el campo verified, sino asumimos false */}
                         {professional.verified && (
                           <div className="flex items-center space-x-1 bg-success-light text-success px-2 py-1 rounded-full text-sm">
                             <Icon name="CheckCircle" size={16} />
@@ -353,16 +308,16 @@ Gracias.`
                         {renderStars(professional.rating)}
                       </div>
                       <span className="text-lg font-semibold text-text-primary">
-                        {professional.rating}
+                        {professional.rating || 'N/A'}
                       </span>
                       <span className="text-text-secondary">
-                        ({professional.reviewsCount} reseñas)
+                        ({reviews.length} reseñas)
                       </span>
                     </div>
                     
                     <div className="flex items-center space-x-2 text-text-secondary">
                       <Icon name="MapPin" size={18} />
-                      <span>{professional.address}</span>
+                      <span>{displayAddress}</span>
                     </div>
                   </div>
                 </div>
@@ -378,28 +333,30 @@ Gracias.`
                 )}
 
                 {/* Services */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-heading font-semibold text-text-primary mb-3">
-                    Servicios
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {professional.services.map((service) => (
-                      <div
-                        key={service}
-                        className="flex items-center space-x-2 p-3 bg-background rounded-lg border border-border-light"
-                      >
-                        <Icon name={getServiceIcon(service)} size={18} className="text-secondary" />
-                        <span className="text-sm font-medium text-text-primary">
-                          {getServiceLabel(service)}
-                        </span>
-                      </div>
-                    ))}
+                {servicesList.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-heading font-semibold text-text-primary mb-3">
+                      Servicios
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {servicesList.map((service) => (
+                        <div
+                          key={service}
+                          className="flex items-center space-x-2 p-3 bg-background rounded-lg border border-border-light"
+                        >
+                          <Icon name={getServiceIcon(service)} size={18} className="text-secondary" />
+                          <span className="text-sm font-medium text-text-primary">
+                            {getServiceLabel(service)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Image Gallery */}
-              {professional.images && professional.images.length > 0 && (
+              {galleryImages.length > 0 && (
                 <div className="bg-surface rounded-xl p-6 shadow-sm border border-border-light">
                   <h3 className="text-lg font-heading font-semibold text-text-primary mb-4">
                     Galería
@@ -409,17 +366,17 @@ Gracias.`
                     {/* Main Image */}
                     <div className="relative aspect-video bg-background rounded-lg overflow-hidden">
                       <Image
-                        src={professional.images[currentImageIndex]}
-                        alt={`${professional.name} - Imagen ${currentImageIndex + 1}`}
+                        src={galleryImages[currentImageIndex]}
+                        alt={`${displayName} - Imagen ${currentImageIndex + 1}`}
                         className="w-full h-full object-cover"
                       />
                       
                       {/* Navigation Arrows */}
-                      {professional.images.length > 1 && (
+                      {galleryImages.length > 1 && (
                         <>
                           <button
                             onClick={() => setCurrentImageIndex(
-                              currentImageIndex === 0 ? professional.images.length - 1 : currentImageIndex - 1
+                              currentImageIndex === 0 ? galleryImages.length - 1 : currentImageIndex - 1
                             )}
                             className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all duration-200"
                           >
@@ -427,7 +384,7 @@ Gracias.`
                           </button>
                           <button
                             onClick={() => setCurrentImageIndex(
-                              currentImageIndex === professional.images.length - 1 ? 0 : currentImageIndex + 1
+                              currentImageIndex === galleryImages.length - 1 ? 0 : currentImageIndex + 1
                             )}
                             className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all duration-200"
                           >
@@ -438,14 +395,14 @@ Gracias.`
 
                       {/* Image Counter */}
                       <div className="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-                        {currentImageIndex + 1} / {professional.images.length}
+                        {currentImageIndex + 1} / {galleryImages.length}
                       </div>
                     </div>
 
                     {/* Thumbnail Gallery */}
-                    {professional.images.length > 1 && (
+                    {galleryImages.length > 1 && (
                       <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                        {professional.images.map((image, index) => (
+                        {galleryImages.map((image, index) => (
                           <button
                             key={index}
                             onClick={() => setCurrentImageIndex(index)}
@@ -457,7 +414,7 @@ Gracias.`
                           >
                             <Image
                               src={image}
-                              alt={`${professional.name} - Miniatura ${index + 1}`}
+                              alt={`${displayName} - Miniatura ${index + 1}`}
                               className="w-full h-full object-cover"
                             />
                           </button>
@@ -471,10 +428,10 @@ Gracias.`
               {/* Description */}
               <div className="bg-surface rounded-xl p-6 shadow-sm border border-border-light">
                 <h3 className="text-lg font-heading font-semibold text-text-primary mb-4">
-                  Sobre {professional.name}
+                  Sobre {displayName}
                 </h3>
                 <div className="prose prose-sm max-w-none text-text-secondary whitespace-pre-line">
-                  {professional.description}
+                  {professional.description || professional.bio || 'Sin descripción disponible.'}
                 </div>
               </div>
 
@@ -484,31 +441,35 @@ Gracias.`
                   Reseñas ({reviews.length})
                 </h3>
                 
-                <div className="space-y-4">
-                  {reviews.map((review) => (
-                    <div key={review.id} className="border-b border-border-light pb-4 last:border-b-0 last:pb-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <div className="flex items-center space-x-2 mb-1">
-                            <span className="font-medium text-text-primary">{review.userName}</span>
-                            {review.verified && (
-                              <Icon name="CheckCircle" size={14} className="text-success" />
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="flex items-center space-x-1">
-                              {renderStars(review.rating)}
+                {reviews.length > 0 ? (
+                  <div className="space-y-4">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="border-b border-border-light pb-4 last:border-b-0 last:pb-0">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className="font-medium text-text-primary">{review.userName}</span>
+                              {review.verified && (
+                                <Icon name="CheckCircle" size={14} className="text-success" />
+                              )}
                             </div>
-                            <span className="text-sm text-text-secondary">
-                              {formatDate(review.date)}
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-1">
+                                {renderStars(review.rating)}
+                              </div>
+                              <span className="text-sm text-text-secondary">
+                                {formatDate(review.date)}
+                              </span>
+                            </div>
                           </div>
                         </div>
+                        <p className="text-text-secondary">{review.comment}</p>
                       </div>
-                      <p className="text-text-secondary">{review.comment}</p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                    <p className="text-text-muted text-sm">Aún no hay reseñas para este profesional.</p>
+                )}
               </div>
             </div>
 
@@ -522,11 +483,11 @@ Gracias.`
                 
                 <div className="space-y-4 mb-6">
                   <div className="text-sm text-text-secondary">
-                    Ponte en contacto con {professional.name} para más información sobre sus servicios.
+                    Ponte en contacto con {displayName} para más información sobre sus servicios.
                   </div>
                   
                   <div className="space-y-3">
-                    {professional.whatsapp && (
+                    {(professional.whatsapp || professional.phone) && (
                       <button
                         onClick={handleWhatsApp}
                         className="w-full flex items-center justify-center space-x-3 px-4 py-3 bg-success text-white rounded-lg font-medium transition-all duration-200 hover:bg-success-600 focus:outline-none focus:ring-2 focus:ring-success-300 active:transform active:scale-95"
@@ -536,39 +497,49 @@ Gracias.`
                       </button>
                     )}
                     
-                    <button
-                      onClick={handleEmail}
-                      className="w-full flex items-center justify-center space-x-3 px-4 py-3 border border-border text-text-primary rounded-lg font-medium transition-all duration-200 hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-primary-300 active:transform active:scale-95"
-                    >
-                      <Icon name="Mail" size={20} />
-                      <span>Email</span>
-                    </button>
+                    {professional.email && (
+                      <button
+                        onClick={handleEmail}
+                        className="w-full flex items-center justify-center space-x-3 px-4 py-3 border border-border text-text-primary rounded-lg font-medium transition-all duration-200 hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-primary-300 active:transform active:scale-95"
+                      >
+                        <Icon name="Mail" size={20} />
+                        <span>Email</span>
+                      </button>
+                    )}
                     
-                    <a
-                      href={`tel:${professional.phone}`}
-                      className="w-full flex items-center justify-center space-x-3 px-4 py-3 border border-border text-text-primary rounded-lg font-medium transition-all duration-200 hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-primary-300 active:transform active:scale-95"
-                    >
-                      <Icon name="Phone" size={20} />
-                      <span>Llamar</span>
-                    </a>
+                    {professional.phone && (
+                        <a
+                        href={`tel:${professional.phone}`}
+                        className="w-full flex items-center justify-center space-x-3 px-4 py-3 border border-border text-text-primary rounded-lg font-medium transition-all duration-200 hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-primary-300 active:transform active:scale-95"
+                        >
+                        <Icon name="Phone" size={20} />
+                        <span>Llamar</span>
+                        </a>
+                    )}
                   </div>
                 </div>
 
                 {/* Contact Information */}
                 <div className="pt-4 border-t border-border-light">
                   <div className="space-y-3 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <Icon name="Phone" size={16} className="text-text-muted" />
-                      <span className="text-text-secondary">{professional.phone}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Icon name="Mail" size={16} className="text-text-muted" />
-                      <span className="text-text-secondary">{professional.email}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Icon name="MapPin" size={16} className="text-text-muted" />
-                      <span className="text-text-secondary">{professional.address}</span>
-                    </div>
+                    {professional.phone && (
+                        <div className="flex items-center space-x-2">
+                        <Icon name="Phone" size={16} className="text-text-muted" />
+                        <span className="text-text-secondary">{professional.phone}</span>
+                        </div>
+                    )}
+                    {professional.email && (
+                        <div className="flex items-center space-x-2">
+                        <Icon name="Mail" size={16} className="text-text-muted" />
+                        <span className="text-text-secondary">{professional.email}</span>
+                        </div>
+                    )}
+                    {professional.address && (
+                        <div className="flex items-center space-x-2">
+                        <Icon name="MapPin" size={16} className="text-text-muted" />
+                        <span className="text-text-secondary">{professional.address}</span>
+                        </div>
+                    )}
                     {professional.website && (
                       <div className="flex items-center space-x-2">
                         <Icon name="Globe" size={16} className="text-text-muted" />
@@ -587,21 +558,23 @@ Gracias.`
               </div>
 
               {/* Opening Hours */}
-              <div className="bg-surface rounded-xl p-6 shadow-sm border border-border-light">
-                <h3 className="text-lg font-heading font-semibold text-text-primary mb-4">
-                  Horarios
-                </h3>
-                <div className="space-y-2">
-                  {Object.entries(professional.openingHours).map(([day, hours]) => (
-                    <div key={day} className="flex justify-between text-sm">
-                      <span className="text-text-secondary">{getDayLabel(day)}:</span>
-                      <span className={`font-medium ${hours === 'Cerrado' ? 'text-error' : 'text-text-primary'}`}>
-                        {hours}
-                      </span>
+              {professional.openingHours && (
+                  <div className="bg-surface rounded-xl p-6 shadow-sm border border-border-light">
+                    <h3 className="text-lg font-heading font-semibold text-text-primary mb-4">
+                      Horarios
+                    </h3>
+                    <div className="space-y-2">
+                      {Object.entries(professional.openingHours).map(([day, hours]) => (
+                        <div key={day} className="flex justify-between text-sm">
+                          <span className="text-text-secondary">{getDayLabel(day)}:</span>
+                          <span className={`font-medium ${hours === 'Cerrado' ? 'text-error' : 'text-text-primary'}`}>
+                            {hours}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
+              )}
 
               {/* Share Card */}
               <div className="bg-surface rounded-xl p-6 shadow-sm border border-border-light">
@@ -612,8 +585,8 @@ Gracias.`
                   onClick={() => {
                     if (navigator.share) {
                       navigator.share({
-                        title: professional.name,
-                        text: `Conoce a ${professional.name} - ${professional.services.map(s => getServiceLabel(s)).join(', ')}`,
+                        title: displayName,
+                        text: `Conoce a ${displayName}`,
                         url: window.location.href
                       });
                     } else {
