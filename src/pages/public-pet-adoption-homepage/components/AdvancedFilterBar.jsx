@@ -13,18 +13,22 @@ const AdvancedFilterBar = ({ filters, onFilterChange, resultsCount, onResetFilte
     { value: 'Other', label: 'Otros' }
   ];
 
+  // ✅ ACTUALIZADO: Categorías de edad según PDF
   const ageOptions = [
     { value: '', label: 'Todas las edades' },
-    { value: 'Puppy', label: 'Cachorro/Gatito' },
-    { value: 'Adult', label: 'Adulto' },
-    { value: 'Senior', label: 'Senior' }
+    { value: 'Puppy', label: 'Cachorro (0-1 año)' },
+    { value: 'Young', label: 'Joven (1-3 años)' },
+    { value: 'Adult', label: 'Adulto (3-7 años)' },
+    { value: 'Senior', label: 'Senior (+7 años)' }
   ];
 
+  // ✅ ACTUALIZADO: Categorías de tamaño según PDF
   const sizeOptions = [
     { value: '', label: 'Todos los tamaños' },
-    { value: 'Small', label: 'Pequeño' },
-    { value: 'Medium', label: 'Mediano' },
-    { value: 'Large', label: 'Grande' }
+    { value: 'Small', label: 'Pequeño (<10kg)' },
+    { value: 'Medium', label: 'Mediano (10-25kg)' },
+    { value: 'Large', label: 'Grande (25-40kg)' },
+    { value: 'Giant', label: 'Gigante (>40kg)' }
   ];
 
   const breedOptions = {
@@ -307,7 +311,7 @@ const AdvancedFilterBar = ({ filters, onFilterChange, resultsCount, onResetFilte
                 </div>
               </div>
 
-              {/* Tags/Characteristics - Ordenadas alfabéticamente */}
+              {/* Tags/Characteristics */}
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-3">
                   Características especiales
@@ -339,7 +343,7 @@ const AdvancedFilterBar = ({ filters, onFilterChange, resultsCount, onResetFilte
                 </div>
               </div>
 
-              {/* Sterilization Status - Orden corregido */}
+              {/* Sterilization Status */}
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-3">
                   Estado de esterilización
