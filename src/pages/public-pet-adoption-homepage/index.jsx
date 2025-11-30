@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/firebaseConfig';
 import Icon from 'components/AppIcon';
 
 import AdvancedFilterBar from './components/AdvancedFilterBar';
@@ -8,11 +10,11 @@ import Pagination from './components/Pagination';
 import FloatingFavoritesButton from 'components/ui/FloatingFavoritesButton';
 import NavigationBreadcrumbs from 'components/ui/NavigationBreadcrumbs';
 import QuickActionsFAB from 'components/ui/QuickActionsFAB';
-import { mockPets } from 'utils/mockData';
 
 const PublicPetAdoptionHomepage = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [pets, setPets] = useState([]); // ✅ NUEVO: Estado para mascotas reales
   const [filters, setFilters] = useState({
     search: '',
     species: '',
@@ -28,17 +30,45 @@ const PublicPetAdoptionHomepage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const petsPerPage = 27;
 
+  // ✅ NUEVO: Cargar mascotas desde Firebase
+  useEffect(() => {
+    const loadPets = async () => {
+      setIsLoading(true);
+      try {
+        // Consulta a Firebase: solo mascotas con status='active'
+        const petsRef = collection(db, 'pets');
+        const q = query(petsRef, where('status', '==', 'active'));
+        const querySnapshot = await getDocs(q);
+        
+        // Mapear los documentos a un array de objetos
+        const petsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        setPets(petsData);
+      } catch (error) {
+        console.error('Error loading pets from Firebase:', error);
+        setPets([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPets();
+  }, []);
+
   // Memoized filtered pets for better performance
   const filteredPets = useMemo(() => {
-    let filtered = mockPets;
+    let filtered = pets; // ✅ CAMBIADO: Ahora usa el estado de pets reales
 
     // Search filter
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(pet =>
-        pet.name.toLowerCase().includes(searchTerm) ||
-        pet.breed.toLowerCase().includes(searchTerm) ||
-        pet.description.toLowerCase().includes(searchTerm)
+        pet.name?.toLowerCase().includes(searchTerm) ||
+        pet.breed?.toLowerCase().includes(searchTerm) ||
+        pet.description?.toLowerCase().includes(searchTerm)
       );
     }
 
@@ -50,18 +80,18 @@ const PublicPetAdoptionHomepage = () => {
     if (filters.age) {
       if (filters.age === 'Puppy') {
         filtered = filtered.filter(pet => 
-          pet.age.includes('meses') || 
-          (pet.age.includes('año') && parseInt(pet.age) <= 1)
+          pet.age?.includes('meses') || 
+          (pet.age?.includes('año') && parseInt(pet.age) <= 1)
         );
       } else if (filters.age === 'Adult') {
         filtered = filtered.filter(pet => 
-          pet.age.includes('año') && 
+          pet.age?.includes('año') && 
           parseInt(pet.age) >= 2 && 
           parseInt(pet.age) <= 6
         );
       } else if (filters.age === 'Senior') {
         filtered = filtered.filter(pet => 
-          pet.age.includes('año') && parseInt(pet.age) >= 7
+          pet.age?.includes('año') && parseInt(pet.age) >= 7
         );
       }
     }
@@ -93,21 +123,12 @@ const PublicPetAdoptionHomepage = () => {
 
     if (filters.tags && filters.tags.length > 0) {
       filtered = filtered.filter(pet => 
-        filters.tags.every(tag => pet.tags.includes(tag))
+        filters.tags.every(tag => pet.tags?.includes(tag))
       );
     }
 
     return filtered;
-  }, [filters]);
-
-  // Simulate loading
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [filters]);
+  }, [filters, pets]); // ✅ CAMBIADO: Agregado 'pets' a las dependencias
 
   // Reset page when filters change
   useEffect(() => {
