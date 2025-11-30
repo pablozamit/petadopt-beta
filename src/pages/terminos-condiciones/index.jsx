@@ -1,380 +1,230 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from 'components/AppIcon';
-import AdaptiveHeader from 'components/ui/AdaptiveHeader';
 
 const TerminosCondiciones = () => {
   const navigate = useNavigate();
 
-  const handleBackToHome = () => {
-    navigate('/');
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <AdaptiveHeader />
-      
-      <main className="pt-16">
-        {/* Header */}
-        <section className="bg-gradient-to-br from-primary-50 to-secondary-50 py-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-4xl font-heading font-bold text-text-primary mb-4">
-                Términos y Condiciones de Uso
-              </h1>
-              <p className="text-lg text-text-secondary">
-                Condiciones generales de uso de la plataforma AdoptaEspaña
+      {/* Header */}
+      <header className="bg-surface border-b border-border-light shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-2"
+            >
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Icon name="Heart" size={20} color="white" />
+              </div>
+              <span className="font-heading font-bold text-xl text-text-primary">
+                AdoptaEspaña
+              </span>
+            </button>
+
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center space-x-2 text-text-secondary hover:text-primary transition-colors duration-200"
+            >
+              <Icon name="ArrowLeft" size={20} />
+              <span>Volver</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-surface rounded-xl shadow-sm border border-border-light p-8">
+          <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">
+            Términos y Condiciones de Uso
+          </h1>
+          <p className="text-sm text-text-secondary mb-8">
+            Última actualización: 30 de agosto de 2023
+          </p>
+
+          <div className="prose prose-slate max-w-none">
+            {/* Identificación del responsable */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                1. Identificación del Responsable
+              </h2>
+              <p className="text-text-secondary mb-4">
+                En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y Comercio Electrónico, el Responsable del sitio web expone sus datos identificativos:
               </p>
-            </div>
+              <div className="bg-primary-50 border-l-4 border-primary p-4 mb-4">
+                <p className="text-text-primary mb-2">
+                  <strong>Denominación social:</strong> OH MY PAWZ, S.L.
+                </p>
+                <p className="text-text-primary mb-2">
+                  <strong>NIF:</strong> B56178767
+                </p>
+                <p className="text-text-primary mb-2">
+                  <strong>Domicilio social:</strong> Calle Luis Martínez, 21 - 39005 Santander (Cantabria)
+                </p>
+                <p className="text-text-primary mb-2">
+                  <strong>Teléfono:</strong> 615 033 513
+                </p>
+                <p className="text-text-primary">
+                  <strong>Email:</strong> info@paw-unique.com
+                </p>
+              </div>
+            </section>
+
+            {/* Objeto */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                2. Objeto
+              </h2>
+              <p className="text-text-secondary mb-4">
+                El sitio web tiene como objeto facilitar al público, en general, el conocimiento de las actividades que desarrolla OH MY PAWZ, S.L., así como de los servicios que presta. El acceso y uso del sitio web atribuye la condición de usuario del sitio web (en adelante, el "Usuario") e implica la aceptación plena y sin reservas de todas y cada una de las disposiciones incluidas en este Aviso Legal.
+              </p>
+              <p className="text-text-secondary mb-4">
+                OH MY PAWZ, S.L. se reserva el derecho de modificar cualquier tipo de información que pudiera aparecer en el sitio web, sin que exista obligación de preavisar o poner en conocimiento de los Usuarios dichas obligaciones, entendiéndose como suficiente la publicación en el sitio web.
+              </p>
+            </section>
+
+            {/* Condiciones de uso */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                3. Condiciones de Uso
+              </h2>
+              <p className="text-text-secondary mb-4">
+                El Usuario se compromete a utilizar el sitio web, los contenidos y servicios de conformidad con la Ley, el presente Aviso Legal, las buenas costumbres y el orden público. Del mismo modo, el Usuario se obliga a no utilizar el sitio web o los servicios que se presten a través del mismo con fines o efectos ilícitos o contrarios al contenido del presente Aviso Legal, lesivos de los intereses o derechos de terceros, o que de cualquier forma pueda dañar, inutilizar o deteriorar el sitio web o sus servicios o impedir un normal disfrute del sitio web por otros Usuarios.
+              </p>
+              <p className="text-text-secondary mb-4">
+                El Usuario se obliga a no transmitir, difundir o poner a disposición de terceros cualquier tipo de material contenido en el sitio web, tales como informaciones, textos, datos, contenidos, mensajes, gráficos, dibujos, archivos de sonido y/o imagen, fotografías, software, logotipos, marcas, iconos, tecnología, enlaces, diseño gráfico y códigos fuente, o cualquier otro material al que tuviera acceso en su condición de Usuario del sitio web, sin que esta enumeración tenga carácter limitativo.
+              </p>
+            </section>
+
+            {/* Responsabilidad */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                4. Responsabilidad
+              </h2>
+              <p className="text-text-secondary mb-4">
+                OH MY PAWZ, S.L. no se hace responsable de la información y contenidos almacenados en foros, redes sociales o cualesquier otro medio que permita a terceros publicar contenidos de forma independiente en la página web del prestador. Sin embargo, teniendo en cuenta los arts. 11 y 16 de la LSSICE, OH MY PAWZ, S.L. se compromete a la retirada o en su caso bloqueo de aquellos contenidos que pudieran afectar o contravenir la legislación nacional o internacional, derechos de terceros o la moral y el orden público.
+              </p>
+              <p className="text-text-secondary mb-4">
+                Tampoco OH MY PAWZ, S.L. se responsabilizará de los daños y perjuicios que se produzcan por fallos o malas configuraciones del software instalado en el ordenador del internauta. Se excluye toda responsabilidad por cualquier daño y perjuicio de toda naturaleza que pudiera deberse al conocimiento que pudieran tener terceros de la clase, condiciones, características y circunstancias del uso que los Usuarios hacen del sitio web.
+              </p>
+              <p className="text-text-secondary mb-4">
+                En todo caso, OH MY PAWZ, S.L. excluye cualquier responsabilidad por los daños y perjuicios de toda naturaleza que pudieran deberse a la presencia de virus o a la presencia de otros elementos lesivos en los contenidos que puedan producir alteraciones en el sistema informático, documentos electrónicos o ficheros de los Usuarios.
+              </p>
+            </section>
+
+            {/* Propiedad intelectual e industrial */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                5. Propiedad Intelectual e Industrial
+              </h2>
+              <p className="text-text-secondary mb-4">
+                Todos los contenidos del sitio web, entendiendo por éstos a título meramente enunciativo los textos, fotografías, gráficos, imágenes, iconos, tecnología, software, links y demás contenidos audiovisuales o sonoros, así como su diseño gráfico y códigos fuente, son propiedad intelectual de OH MY PAWZ, S.L., sin que puedan entenderse cedidos al Usuario ninguno de los derechos de explotación reconocidos por la normativa vigente en materia de propiedad intelectual sobre los mismos.
+              </p>
+              <p className="text-text-secondary mb-4">
+                Las marcas, nombres comerciales o signos distintivos son titularidad de OH MY PAWZ, S.L., sin que pueda entenderse que el acceso al sitio web atribuya al Usuario derecho alguno sobre las citadas marcas, nombres comerciales y/o signos distintivos.
+              </p>
+              <p className="text-text-secondary mb-4">
+                El Usuario reconoce que la reproducción, distribución, comercialización, transformación y, en general, cualquier otra forma de explotación, por cualquier procedimiento, de todo o parte de los contenidos de esta página web constituye una infracción de los derechos de propiedad intelectual y/o industrial del titular de la página web o del titular de los mismos.
+              </p>
+            </section>
+
+            {/* Enlaces */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                6. Enlaces
+              </h2>
+              <p className="text-text-secondary mb-4">
+                El sitio web de OH MY PAWZ, S.L. puede incluir enlaces a sitios web de terceros. Toda vez que OH MY PAWZ, S.L. no tiene control alguno sobre tales sitios web, en ningún caso será responsable de los contenidos de algún sitio enlazado ni garantiza la disponibilidad técnica, exactitud, veracidad, validez o legalidad de sitios ajenos a su propiedad a los que se pueda acceder por medio de los enlaces.
+              </p>
+              <p className="text-text-secondary mb-4">
+                Asimismo, tampoco garantizará la utilidad de dichos enlaces, ni será responsable de los contenidos o servicios a los que pueda acceder el Usuario por medio de los enlaces, ni de la operatividad o disponibilidad de las páginas web enlazadas.
+              </p>
+              <p className="text-text-secondary mb-4">
+                En el supuesto de que el sitio web permitiera a los Usuarios incluir enlaces hacia otros sitios de Internet, OH MY PAWZ, S.L. no asume ninguna responsabilidad derivada de la conexión o contenidos de los enlaces a los que hagan referencia los Usuarios y no presta conformidad a los mismos. Será responsabilidad del Usuario el uso y control de los enlaces que introduzca.
+              </p>
+            </section>
+
+            {/* Protección de datos */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                7. Protección de Datos
+              </h2>
+              <p className="text-text-secondary mb-4">
+                OH MY PAWZ, S.L. se compromete a cumplir con su obligación de secreto con respecto a los datos de carácter personal y su deber de tratarlos con confidencialidad. A estos efectos, adoptará las medidas necesarias para evitar su alteración, pérdida, tratamiento o acceso no autorizado.
+              </p>
+              <p className="text-text-secondary mb-4">
+                Para más información, puede consultar nuestra <a href="/politica-privacidad" className="text-primary hover:underline">Política de Privacidad</a>.
+              </p>
+            </section>
+
+            {/* Legislación aplicable */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                8. Legislación Aplicable y Jurisdicción
+              </h2>
+              <p className="text-text-secondary mb-4">
+                Las presentes Condiciones Generales se rigen por la legislación española. Para la resolución de cualquier controversia relativa a la interpretación o aplicación de las presentes Condiciones Generales, las partes se someten a la jurisdicción de los Juzgados y Tribunales de Santander (Cantabria), con renuncia expresa a cualquier otro fuero que pudiera corresponderles.
+              </p>
+            </section>
+
+            {/* Condiciones específicas para protectoras */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                9. Condiciones Específicas para Protectoras y Refugios
+              </h2>
+              <p className="text-text-secondary mb-4">
+                Las protectoras y refugios que utilicen la plataforma se comprometen a:
+              </p>
+              <ul className="list-disc list-inside text-text-secondary space-y-2 mb-4">
+                <li>Proporcionar información veraz y actualizada sobre los animales en adopción.</li>
+                <li>Cumplir con toda la normativa aplicable en materia de bienestar animal.</li>
+                <li>Realizar seguimientos responsables de las adopciones.</li>
+                <li>No utilizar la plataforma para fines comerciales no autorizados.</li>
+                <li>Responder de manera diligente a las solicitudes de adopción.</li>
+              </ul>
+            </section>
+
+            {/* Condiciones específicas para profesionales */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                10. Condiciones Específicas para Profesionales del Sector
+              </h2>
+              <p className="text-text-secondary mb-4">
+                Los profesionales (veterinarios, educadores, peluquerías, etc.) que ofrezcan sus servicios a través de la plataforma se comprometen a:
+              </p>
+              <ul className="list-disc list-inside text-text-secondary space-y-2 mb-4">
+                <li>Contar con las licencias y autorizaciones necesarias para ejercer su actividad.</li>
+                <li>Proporcionar servicios de calidad y respeto hacia los animales.</li>
+                <li>Mantener actualizada la información de su perfil profesional.</li>
+                <li>Cumplir con la normativa aplicable a su sector de actividad.</li>
+                <li>Respetar los precios y condiciones publicadas en su perfil.</li>
+              </ul>
+            </section>
+
+            {/* Modificaciones */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                11. Modificaciones
+              </h2>
+              <p className="text-text-secondary mb-4">
+                OH MY PAWZ, S.L. se reserva el derecho de efectuar sin previo aviso las modificaciones que considere oportunas en su portal, pudiendo cambiar, suprimir o añadir tanto los contenidos y servicios que se presten a través de la misma como la forma en la que éstos aparezcan presentados o localizados en sus servidores.
+              </p>
+              <p className="text-text-secondary mb-4">
+                La vigencia de las citadas condiciones será la de su exposición y estarán vigentes hasta que sean modificadas por otras debidamente publicadas.
+              </p>
+            </section>
           </div>
-        </section>
-
-        {/* Content */}
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-surface rounded-xl p-8 shadow-sm border border-border-light">
-            <div className="prose prose-lg max-w-none">
-              
-              {/* Aviso Legal */}
-              <div className="mb-8 p-6 bg-warning-light rounded-lg border border-warning">
-                <div className="flex items-start space-x-3">
-                  <Icon name="AlertTriangle" size={24} className="text-warning flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-heading font-semibold text-warning-700 mb-2">
-                      Aviso Legal Importante
-                    </h3>
-                    <p className="text-warning-700 text-sm">
-                      <strong>Estos términos y condiciones son un documento de demostración.</strong> 
-                      Antes de implementar en producción, es <strong>obligatorio consultar con un abogado especializado 
-                      en derecho digital</strong> para asegurar el cumplimiento de la legislación española vigente.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sección 1 - Información General */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Info" size={24} className="text-primary mr-3" />
-                  1. Información general
-                </h2>
-                <div className="bg-background rounded-lg p-6 border border-border-light">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <strong className="text-text-primary">Titular del sitio web:</strong>
-                      <p className="text-text-secondary">[Nombre comercial o razón social]</p>
-                    </div>
-                    <div>
-                      <strong className="text-text-primary">CIF/NIF:</strong>
-                      <p className="text-text-secondary">[Número de identificación fiscal]</p>
-                    </div>
-                    <div>
-                      <strong className="text-text-primary">Domicilio social:</strong>
-                      <p className="text-text-secondary">[Dirección completa]</p>
-                    </div>
-                    <div>
-                      <strong className="text-text-primary">Correo electrónico:</strong>
-                      <p className="text-text-secondary">[ejemplo@dominio.com]</p>
-                    </div>
-                    <div>
-                      <strong className="text-text-primary">Dominio web:</strong>
-                      <p className="text-text-secondary">[www.tudominio.com]</p>
-                    </div>
-                    <div>
-                      <strong className="text-text-primary">Objeto del sitio:</strong>
-                      <p className="text-text-secondary">Plataforma de adopción de animales y conexión entre usuarios y protectoras.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sección 2 - Objeto y ámbito */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Target" size={24} className="text-primary mr-3" />
-                  2. Objeto y ámbito de aplicación
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  Las presentes condiciones regulan el acceso, navegación y uso del sitio web, así como las responsabilidades 
-                  derivadas de la utilización de sus contenidos. El acceso y uso del sitio implica la aceptación plena y sin 
-                  reservas de estas condiciones.
-                </p>
-                <div className="bg-warning-light rounded-lg p-4 border border-warning">
-                  <p className="text-warning-700 font-medium">
-                    Si no estás de acuerdo, te pedimos que no utilices nuestros servicios.
-                  </p>
-                </div>
-              </div>
-
-              {/* Sección 3 - Condiciones de acceso */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Key" size={24} className="text-primary mr-3" />
-                  3. Condiciones de acceso y uso
-                </h2>
-                <div className="space-y-4">
-                  <p className="text-text-secondary leading-relaxed">
-                    El acceso al sitio web es libre y gratuito, salvo para funcionalidades que requieran registro.
-                  </p>
-                  <p className="text-text-secondary leading-relaxed">
-                    El usuario se compromete a hacer un uso adecuado y lícito de los contenidos y servicios.
-                  </p>
-                  
-                  <div className="bg-error-light rounded-lg p-4 border border-error">
-                    <h4 className="font-semibold text-error mb-3">Se prohíbe:</h4>
-                    <ul className="space-y-2 text-error-700 text-sm">
-                      <li className="flex items-start space-x-2">
-                        <Icon name="XCircle" size={16} className="mt-0.5 flex-shrink-0" />
-                        <span>La reproducción o distribución no autorizada de contenidos.</span>
-                      </li>
-                      <li className="flex items-start space-x-2">
-                        <Icon name="XCircle" size={16} className="mt-0.5 flex-shrink-0" />
-                        <span>El uso del sitio con fines ilícitos, fraudulentos o lesivos para terceros.</span>
-                      </li>
-                      <li className="flex items-start space-x-2">
-                        <Icon name="XCircle" size={16} className="mt-0.5 flex-shrink-0" />
-                        <span>La introducción de virus, malware o cualquier código malicioso.</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sección 4 - Registro de usuario */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="UserPlus" size={24} className="text-primary mr-3" />
-                  4. Registro de usuario
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  Algunas funcionalidades (como enviar solicitudes de adopción o crear perfiles) requieren registro mediante formulario.
-                </p>
-                
-                <div className="bg-background rounded-lg p-4 border border-border-light">
-                  <h4 className="font-semibold text-text-primary mb-3">El usuario se compromete a:</h4>
-                  <ul className="space-y-2 text-text-secondary">
-                    <li className="flex items-start space-x-2">
-                      <Icon name="CheckCircle" size={16} className="text-success mt-0.5 flex-shrink-0" />
-                      <span>Proporcionar información veraz y actualizada.</span>
-                    </li>
-                    <li className="flex items-start space-x-2">
-                      <Icon name="CheckCircle" size={16} className="text-success mt-0.5 flex-shrink-0" />
-                      <span>Mantener la confidencialidad de sus credenciales.</span>
-                    </li>
-                    <li className="flex items-start space-x-2">
-                      <Icon name="CheckCircle" size={16} className="text-success mt-0.5 flex-shrink-0" />
-                      <span>Notificar cualquier uso no autorizado de su cuenta.</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Sección 5 - Responsabilidad */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="AlertTriangle" size={24} className="text-primary mr-3" />
-                  5. Responsabilidad
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  El titular del sitio web no será responsable:
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3 p-3 bg-background rounded-lg border border-border-light">
-                    <Icon name="Minus" size={16} className="text-warning mt-0.5 flex-shrink-0" />
-                    <span className="text-text-secondary text-sm">De interrupciones o errores en el acceso por causas técnicas ajenas a su control.</span>
-                  </div>
-                  <div className="flex items-start space-x-3 p-3 bg-background rounded-lg border border-border-light">
-                    <Icon name="Minus" size={16} className="text-warning mt-0.5 flex-shrink-0" />
-                    <span className="text-text-secondary text-sm">De los contenidos enlazados desde sitios de terceros.</span>
-                  </div>
-                  <div className="flex items-start space-x-3 p-3 bg-background rounded-lg border border-border-light">
-                    <Icon name="Minus" size={16} className="text-warning mt-0.5 flex-shrink-0" />
-                    <span className="text-text-secondary text-sm">De la veracidad o legalidad de los datos publicados por usuarios o protectoras colaboradoras.</span>
-                  </div>
-                  <div className="flex items-start space-x-3 p-3 bg-background rounded-lg border border-border-light">
-                    <Icon name="Minus" size={16} className="text-warning mt-0.5 flex-shrink-0" />
-                    <span className="text-text-secondary text-sm">De las decisiones derivadas de la información mostrada en la plataforma (ej. adopciones).</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sección 6 - Propiedad intelectual */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Copyright" size={24} className="text-primary mr-3" />
-                  6. Propiedad intelectual e industrial
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  Todos los contenidos del sitio (textos, imágenes, logos, diseño, código fuente, etc.) son propiedad del titular 
-                  o cuentan con licencia expresa para su uso.
-                </p>
-                <div className="bg-error-light rounded-lg p-4 border border-error">
-                  <p className="text-error-700 font-medium">
-                    Queda prohibida su reproducción, distribución, transformación o comunicación pública sin autorización expresa y por escrito.
-                  </p>
-                </div>
-              </div>
-
-              {/* Sección 7 - Enlaces externos */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="ExternalLink" size={24} className="text-primary mr-3" />
-                  7. Enlaces externos
-                </h2>
-                <p className="text-text-secondary leading-relaxed">
-                  Este sitio puede contener enlaces a sitios de terceros. El titular no se responsabiliza del contenido, 
-                  funcionamiento o disponibilidad de esos sitios, ni de posibles daños derivados de su uso.
-                </p>
-              </div>
-
-              {/* Sección 8 - Protección de datos */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Shield" size={24} className="text-primary mr-3" />
-                  8. Protección de datos personales
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  El tratamiento de datos personales se rige por nuestra Política de Privacidad, accesible en el siguiente enlace:
-                </p>
-                <div className="bg-primary-50 rounded-lg p-4 border border-primary-200">
-                  <button
-                    onClick={() => window.open('/politica-privacidad', '_blank')}
-                    className="flex items-center space-x-2 text-primary hover:text-primary-600 font-medium"
-                  >
-                    <Icon name="Shield" size={16} />
-                    <span>Política de Privacidad</span>
-                    <Icon name="ExternalLink" size={14} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Sección 9 - Cookies */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Cookie" size={24} className="text-primary mr-3" />
-                  9. Uso de cookies
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  El sitio utiliza cookies propias y de terceros con fines técnicos, analíticos y de personalización. 
-                  Puedes consultar los detalles y configurar tus preferencias en la Política de Cookies.
-                </p>
-                <div className="bg-accent-50 rounded-lg p-4 border border-accent-200">
-                  <button
-                    onClick={() => window.open('/politica-cookies', '_blank')}
-                    className="flex items-center space-x-2 text-accent hover:text-accent-600 font-medium"
-                  >
-                    <Icon name="Cookie" size={16} />
-                    <span>Política de Cookies</span>
-                    <Icon name="ExternalLink" size={14} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Sección 10 - Modificaciones */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="RefreshCw" size={24} className="text-primary mr-3" />
-                  10. Modificaciones
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  Nos reservamos el derecho de modificar en cualquier momento estas condiciones. Los cambios se comunicarán 
-                  a los usuarios registrados o se publicarán en esta misma sección.
-                </p>
-                <div className="bg-warning-light rounded-lg p-4 border border-warning">
-                  <p className="text-warning-700 font-medium">
-                    El uso del sitio tras la publicación de cambios implica la aceptación de los mismos.
-                  </p>
-                </div>
-              </div>
-
-              {/* Sección 11 - Legislación */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Scale" size={24} className="text-primary mr-3" />
-                  11. Legislación y jurisdicción
-                </h2>
-                <p className="text-text-secondary leading-relaxed">
-                  Las presentes condiciones se rigen por la legislación española. Para la resolución de cualquier conflicto 
-                  que pudiera derivarse, las partes se someten a los juzgados y tribunales del domicilio del titular del sitio, 
-                  salvo que la legislación aplicable disponga lo contrario.
-                </p>
-              </div>
-
-              {/* Fecha de actualización */}
-              <div className="mb-8">
-                <div className="bg-accent-50 rounded-lg p-4 border border-accent-200">
-                  <p className="text-accent-700 font-medium">
-                    <strong>Última actualización:</strong> 15 de enero de 2025
-                  </p>
-                  <p className="text-accent-600 text-sm mt-1">
-                    <strong>Próxima revisión programada:</strong> 15 de enero de 2026
-                  </p>
-                </div>
-              </div>
-
-              {/* Contacto */}
-              <div className="mb-8 bg-primary-50 rounded-lg p-6 border border-primary-200">
-                <h3 className="font-heading font-semibold text-primary mb-4 flex items-center">
-                  <Icon name="Mail" size={20} className="mr-2" />
-                  Contacto
-                </h3>
-                <p className="text-primary-700 mb-3">
-                  Para cualquier consulta sobre estos términos y condiciones:
-                </p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <Icon name="Mail" size={16} className="text-primary" />
-                    <span className="text-primary-700">info@adoptaespana.com</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Icon name="Phone" size={16} className="text-primary" />
-                    <span className="text-primary-700">+34 900 123 456</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Icon name="MapPin" size={16} className="text-primary" />
-                    <span className="text-primary-700">Calle Esperanza 123, 28001 Madrid, España</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Enlaces relacionados */}
-              <div className="mb-8 bg-secondary-50 rounded-lg p-6 border border-secondary-200">
-                <h3 className="font-heading font-semibold text-secondary mb-4">
-                  Documentos relacionados
-                </h3>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => window.open('/politica-privacidad', '_blank')}
-                    className="flex items-center space-x-2 text-secondary hover:text-secondary-600 transition-colors duration-200"
-                  >
-                    <Icon name="Shield" size={16} />
-                    <span>Política de Privacidad</span>
-                    <Icon name="ExternalLink" size={14} />
-                  </button>
-                  <button
-                    onClick={() => window.open('/politica-cookies', '_blank')}
-                    className="flex items-center space-x-2 text-secondary hover:text-secondary-600 transition-colors duration-200"
-                  >
-                    <Icon name="Cookie" size={16} />
-                    <span>Política de Cookies</span>
-                    <Icon name="ExternalLink" size={14} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Botón de vuelta */}
-              <div className="text-center pt-8 border-t border-border-light">
-                <button
-                  onClick={handleBackToHome}
-                  className="btn-primary flex items-center space-x-2 mx-auto"
-                >
-                  <Icon name="ArrowLeft" size={20} />
-                  <span>Volver al inicio</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+        </div>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-surface border-t border-border-light mt-16 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-text-secondary">
+          <p>© {new Date().getFullYear()} OH MY PAWZ, S.L. - AdoptaEspaña. Todos los derechos reservados.</p>
+        </div>
+      </footer>
     </div>
   );
 };
