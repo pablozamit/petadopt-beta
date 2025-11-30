@@ -1,114 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig'; // Importamos la DB real
-import { useAuth } from 'hooks/useAuth'; // Auth real
+import { collection, query, where, getDocs, orderBy, onSnapshot } from 'firebase/firestore';
 import Icon from 'components/AppIcon';
-
-import AdaptiveHeader from 'components/ui/AdaptiveHeader';
-import DashboardQuickActions from 'components/ui/DashboardQuickActions';
-import DashboardStats from './components/DashboardStats';
-import PetManagementGrid from './components/PetManagementGrid';
-import RecentActivity from './components/RecentActivity';
+import { db, auth } from '@/firebaseConfig';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ShelterDashboard = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { user, userData, loading } = useAuth();
-  const [pets, setPets] = useState([]);
-  const [filteredPets, setFilteredPets] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [speciesFilter, setSpeciesFilter] = useState('all');
-  const [selectedPets, setSelectedPets] = useState([]);
-  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [stats, setStats] = useState({ petsPublished: 0, adoptionRequests: 0, activePets: 0 });
+  const [recentPets, setRecentPets] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // 1. Escuchar la base de datos en TIEMPO REAL
   useEffect(() => {
-    if (loading) return;
     if (!user) {
-      navigate('/authentication-login-register');
+      navigate('/login');
       return;
     }
 
-    // Consulta: Dame las mascotas donde 'shelterId' sea igual a MI id actual
+    // Stats simulados (futuro Firebase queries)
+    setStats({
+      petsPublished: 24,
+      adoptionRequests: 8,
+      activePets: 15
+    });
+
+    // Últimas mascotas del refugio (Firebase)
     const q = query(
-      collection(db, "pets"),
-      where("shelterId", "==", user.uid)
+      collection(db, 'pets'),
+      where('shelterId', '==', user.uid),
+      orderBy('createdAt', 'desc'),
+      limit(5)
     );
-
-    // Suscripción a cambios (se ejecuta al inicio y cada vez que algo cambia en la DB)
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const petsData = [];
-      querySnapshot.forEach((doc) => {
-        petsData.push({ id: doc.id, ...doc.data() });
-      });
-      setPets(petsData);
-      setFilteredPets(petsData);
-      setIsLoadingData(false);
-    }, (error) => {
-      console.error("Error leyendo mascotas:", error);
-      setIsLoadingData(false);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const petsList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setRecentPets(petsList);
+      setLoading(false);
     });
 
-    // Limpiar suscripción al desmontar
-    return () => unsubscribe();
-  }, [user, loading, navigate]);
+    // Solicitudes (simuladas)
+    setRequests([
+      { id: '1', petName: 'Luna', adopterName: 'Ana G.', date: 'hace 2 días', status: 'pendiente' },
+      { id: '2', petName: 'Max', adopterName: 'Carlos L.', date: 'hace 4 días', status: 'contactado' }
+    ]);
 
-  // 2. Filtrado local (Búsqueda, Estado, Especie)
-  useEffect(() => {
-    let filtered = pets;
+    return unsubscribe;
+  }, [user, navigate]);
 
-    if (searchTerm) {
-      const lowerTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter(pet =>
-        (pet.name && pet.name.toLowerCase().includes(lowerTerm)) ||
-        (pet.breed && pet.breed.toLowerCase().includes(lowerTerm))
-      );
-    }
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(pet => pet.status === statusFilter);
-    }
-
-    if (speciesFilter !== 'all') {
-      filtered = filtered.filter(pet => pet.species === speciesFilter);
-    }
-
-    setFilteredPets(filtered);
-  }, [pets, searchTerm, statusFilter, speciesFilter]);
-
-  const handleAddPet = () => navigate('/add-edit-pet-form');
-  
-  const handleEditPet = (petId) => navigate(`/add-edit-pet-form?edit=true&id=${petId}`);
-
-  // 3. Borrado Real en Base de Datos
-  const handleDeletePet = async (petId) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta mascota permanentemente?')) {
-      try {
-        await deleteDoc(doc(db, "pets", petId));
-        // No necesitamos actualizar el estado manualmente, onSnapshot lo hará
-      } catch (error) {
-        console.error("Error eliminando:", error);
-        alert("Error al eliminar. Inténtalo de nuevo.");
-      }
-    }
-  };
-
-  const getCurrentDate = () => {
-    return new Date().toLocaleDateString('es-ES', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
-  };
-
-  if (loading || isLoadingData) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <AdaptiveHeader />
-        <div className="pt-16 flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-text-secondary">Cargando tus mascotas...</p>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-6" />
+          <p className="text-text-secondary">Preparando tu panel...</p>
         </div>
       </div>
     );
@@ -116,106 +61,141 @@ const ShelterDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <AdaptiveHeader />
-      
-      <main className="pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Welcome Section */}
-          <div className="mb-8 animate-fade-in">
-            <div className="bg-gradient-to-r from-primary to-primary-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-heading font-bold mb-2">
-                    ¡Hola, {userData?.displayName || user?.email}!
-                  </h1>
-                  <p className="text-primary-100 capitalize">
-                    {getCurrentDate()}
-                  </p>
-                </div>
-                <div className="hidden md:block">
-                  <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <Icon name="Building2" size={32} color="white" />
-                  </div>
-                </div>
+      {/* Header */}
+      <header className="bg-surface border-b border-border-light shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center">
+                <Icon name="Shield" size={20} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-heading font-bold text-text-primary">
+                  Bienvenida a tu panel de control
+                </h1>
+                <p className="text-text-secondary">
+                  {user.email} • Protectora verificada
+                </p>
               </div>
             </div>
-          </div>
-
-          {/* Quick Actions */}
-          <DashboardQuickActions />
-
-          {/* Dashboard Stats */}
-          <DashboardStats pets={pets} />
-
-          {/* Search and Filters */}
-          <div className="bg-surface rounded-xl p-6 shadow-sm border border-border-light mb-8 animate-fade-in">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-              <h2 className="text-xl font-heading font-semibold text-text-primary">
-                Gestión de Mascotas
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="relative">
-                <Icon name="Search" size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted" />
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre o raza..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-field pl-10"
-                />
-              </div>
-
-              {/* Status Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="input-field"
-              >
-                <option value="all">Todos los estados</option>
-                <option value="active">Activo</option>
-                <option value="pending">Pendiente</option>
-                <option value="adopted">Adoptado</option>
-              </select>
-
-              {/* Species Filter */}
-              <select
-                value={speciesFilter}
-                onChange={(e) => setSpeciesFilter(e.target.value)}
-                className="input-field"
-              >
-                <option value="all">Todas las especies</option>
-                <option value="dog">Perros</option>
-                <option value="cat">Gatos</option>
-              </select>
-
-              {/* Add Pet Button */}
-              <button onClick={handleAddPet} className="btn-primary flex items-center justify-center space-x-2">
-                <Icon name="Plus" size={20} />
-                <span>Añadir Mascota</span>
+            <div className="flex gap-3">
+              <button className="btn-outline px-6 py-2 rounded-xl">
+                Configuracin
+              </button>
+              <button className="btn-primary px-8 py-2 rounded-xl font-semibold">
+                Cerrar sesin
               </button>
             </div>
           </div>
-
-          {/* Pet Management Grid */}
-          <div id="pets-section">
-            <PetManagementGrid
-              pets={filteredPets}
-              selectedPets={selectedPets}
-              onSelectPet={setSelectedPets}
-              onEditPet={handleEditPet}
-              onDeletePet={handleDeletePet}
-            />
-          </div>
-
-          {/* Recent Activity */}
-          <RecentActivity />
         </div>
-      </main>
-    </div>
-  );
-};
+      </header>
 
-export default ShelterDashboard;
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+        {/* Stats */}
+        <section>
+          <h2 className="text-3xl font-heading font-bold text-text-primary mb-8">
+            Tu actividad reciente
+          </h2>
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="bg-surface rounded-2xl p-8 border border-border-light hover:shadow-md transition-all text-center">
+              <div className="text-4xl font-bold text-primary mb-2">
+                {stats.petsPublished}
+              </div>
+              <p className="text-sm text-text-secondary uppercase tracking-wider">Mascotas publicadas</p>
+            </div>
+            <div className="bg-surface rounded-2xl p-8 border border-border-light hover:shadow-md transition-all text-center">
+              <div className="text-4xl font-bold text-secondary mb-2">
+                {stats.activePets}
+              </div>
+              <p className="text-sm text-text-secondary uppercase tracking-wider">Activas adopcin</p>
+            </div>
+            <div className="bg-surface rounded-2xl p-8 border border-border-light hover:shadow-md transition-all text-center">
+              <div className="text-4xl font-bold text-accent mb-2">
+                {stats.adoptionRequests}
+              </div>
+              <p className="text-sm text-text-secondary uppercase tracking-wider">Solicitudes adopcin</p>
+            </div>
+            <div className="bg-primary/5 border-primary/20 rounded-2xl p-8 hover:shadow-md transition-all text-center">
+              <Icon name="TrendingUp" size={32} className="mx-auto mb-4 text-primary" />
+              <p className="text-sm text-text-secondary">+20% vs mes anterior</p>
+            </div>
+          </div>
+        </section>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Últimas mascotas */}
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-text-primary">
+                Últimas mascotas publicadas
+              </h3>
+              <button className="btn-outline px-6 py-2 rounded-xl text-sm">
+                Ver todas
+              </button>
+            </div>
+            <div className="space-y-4">
+              {recentPets.map((pet) => (
+                <div key={pet.id} className="flex items-center gap-4 p-4 bg-surface rounded-xl border border-border-light hover:bg-surface-hover transition-colors">
+                  <img src={pet.images?.[0]} alt={pet.name} className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-text-primary truncate">{pet.name}</h4>
+                    <p className="text-sm text-text-secondary">{pet.age} • {pet.size}</p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-text-muted">
+                    <span className={`px-2 py-1 rounded-full font-medium ${
+                      pet.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                    }`}>
+                      {pet.status || 'Activo'}
+                    </span>
+                  </div>
+                  <button className="ml-auto text-primary hover:text-primary/80">
+                    <Icon name="Edit" size={18} />
+                  </button>
+                </div>
+              ))}
+              {recentPets.length === 0 && (
+                <div className="text-center py-12">
+                  <Icon name="Plus" size={48} className="mx-auto mb-4 text-text-muted" />
+                  <p className="text-text-secondary">No tienes mascotas publicadas</p>
+                  <button className="btn-primary mt-4 px-8 py-3 rounded-xl">
+                    Publicar primera mascota
+                  </button>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Solicitudes */}
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-text-primary">
+                Solicitudes pendientes
+              </h3>
+              <button className="btn-outline px-6 py-2 rounded-xl text-sm">
+                Ver todas
+              </button>
+            </div>
+            <div className="space-y-4">
+              {requests.map((req) => (
+                <div key={req.id} className="flex items-start gap-4 p-4 bg-surface rounded-xl border border-border-light hover:bg-surface-hover">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Icon name="User" size={20} className="text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-semibold text-text-primary text-sm">{req.adopterName}</h4>
+                      <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
+                        Pendiente
+                      </span>
+                    </div>
+                    <p className="text-sm text-text-secondary mb-2">Interesado en {req.petName}</p>
+                    <p className="text-xs text-text-muted">{req.date}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <button className="p-2 text-green-600 hover:bg-green-50 rounded-lg">
+                      <Icon name="Check" size={16} />
+                    </button>
+                    <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+                      <Icon name="X" size={16} />
+                    </button>
+                  </div
