@@ -4,8 +4,9 @@ import Icon from 'components/AppIcon';
 const PetFormFields = ({ formData, errors, onChange }) => {
   const ageOptions = [
     { value: 'puppy', label: 'Cachorro (0-1 año)' },
-    { value: 'adult', label: 'Adulto (1-7 años)' },
-    { value: 'senior', label: 'Senior (7+ años)' }
+    { value: 'young', label: 'Joven (1-3 años)' },
+    { value: 'adult', label: 'Adulto (3-7 años)' },
+    { value: 'senior', label: 'Senior (+7 años)' }
   ];
 
   const speciesOptions = [
@@ -15,9 +16,10 @@ const PetFormFields = ({ formData, errors, onChange }) => {
   ];
 
   const sizeOptions = [
-    { value: 'small', label: 'Pequeño (< 10kg)', description: 'Ideal para apartamentos' },
+    { value: 'small', label: 'Pequeño (<10kg)', description: 'Ideal para apartamentos' },
     { value: 'medium', label: 'Mediano (10-25kg)', description: 'Tamaño equilibrado' },
-    { value: 'large', label: 'Grande (> 25kg)', description: 'Necesita espacio' }
+    { value: 'large', label: 'Grande (25-40kg)', description: 'Necesita espacio amplio' },
+    { value: 'giant', label: 'Gigante (>40kg)', description: 'Requiere mucho espacio' }
   ];
 
   const spanishProvinces = [
@@ -111,7 +113,7 @@ const PetFormFields = ({ formData, errors, onChange }) => {
         <label className="block text-sm font-medium text-text-primary mb-2">
           Tamaño *
         </label>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {sizeOptions.map(option => (
             <button
               key={option.value}
