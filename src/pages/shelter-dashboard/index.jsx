@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, onSnapshot, limit } from 'firebase/firestore';
 import Icon from 'components/AppIcon';
 import { db, auth } from '@/firebaseConfig';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,6 +33,7 @@ const ShelterDashboard = () => {
       orderBy('createdAt', 'desc'),
       limit(5)
     );
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const petsList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setRecentPets(petsList);
@@ -45,7 +46,7 @@ const ShelterDashboard = () => {
       { id: '2', petName: 'Max', adopterName: 'Carlos L.', date: 'hace 4 días', status: 'contactado' }
     ]);
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, [user, navigate]);
 
   if (loading) {
@@ -80,10 +81,10 @@ const ShelterDashboard = () => {
             </div>
             <div className="flex gap-3">
               <button className="btn-outline px-6 py-2 rounded-xl">
-                Configuracin
+                Configuración
               </button>
               <button className="btn-primary px-8 py-2 rounded-xl font-semibold">
-                Cerrar sesin
+                Cerrar sesión
               </button>
             </div>
           </div>
@@ -107,13 +108,13 @@ const ShelterDashboard = () => {
               <div className="text-4xl font-bold text-secondary mb-2">
                 {stats.activePets}
               </div>
-              <p className="text-sm text-text-secondary uppercase tracking-wider">Activas adopcin</p>
+              <p className="text-sm text-text-secondary uppercase tracking-wider">Activas adopción</p>
             </div>
             <div className="bg-surface rounded-2xl p-8 border border-border-light hover:shadow-md transition-all text-center">
               <div className="text-4xl font-bold text-accent mb-2">
                 {stats.adoptionRequests}
               </div>
-              <p className="text-sm text-text-secondary uppercase tracking-wider">Solicitudes adopcin</p>
+              <p className="text-sm text-text-secondary uppercase tracking-wider">Solicitudes adopción</p>
             </div>
             <div className="bg-primary/5 border-primary/20 rounded-2xl p-8 hover:shadow-md transition-all text-center">
               <Icon name="TrendingUp" size={32} className="mx-auto mb-4 text-primary" />
@@ -157,7 +158,10 @@ const ShelterDashboard = () => {
                 <div className="text-center py-12">
                   <Icon name="Plus" size={48} className="mx-auto mb-4 text-text-muted" />
                   <p className="text-text-secondary">No tienes mascotas publicadas</p>
-                  <button className="btn-primary mt-4 px-8 py-3 rounded-xl">
+                  <button 
+                    onClick={() => navigate('/add-edit-pet-form')}
+                    className="btn-primary mt-4 px-8 py-3 rounded-xl"
+                  >
                     Publicar primera mascota
                   </button>
                 </div>
@@ -198,4 +202,15 @@ const ShelterDashboard = () => {
                     <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
                       <Icon name="X" size={16} />
                     </button>
-                  </div
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ShelterDashboard;
