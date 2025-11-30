@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/firebaseConfig';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import AdaptiveHeader from 'components/ui/AdaptiveHeader';
@@ -17,141 +19,6 @@ const ProfessionalsDirectory = () => {
     province: '',
     city: ''
   });
-
-  // Mock data for professionals
-  const mockProfessionals = [
-    {
-      id: 'prof_001',
-      name: 'Clínica Veterinaria San Antón',
-      type: 'clinic',
-      services: ['veterinary', 'emergency', 'dentistry'],
-      description: 'Clínica veterinaria con más de 20 años de experiencia. Especialistas en cirugía y medicina interna.',
-      address: 'Calle Mayor 123, Madrid',
-      city: 'Madrid',
-      province: 'madrid',
-      phone: '+34 91 123 4567',
-      email: 'info@clinicasananton.com',
-      website: 'https://clinicasananton.com',
-      whatsapp: '+34 600 123 456',
-      logo: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=200&h=200&fit=crop',
-      images: [
-        'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=300&fit=crop'
-      ],
-      rating: 4.8,
-      reviewsCount: 127,
-      verified: true,
-      openingHours: {
-        monday: '09:00-20:00',
-        tuesday: '09:00-20:00',
-        wednesday: '09:00-20:00',
-        thursday: '09:00-20:00',
-        friday: '09:00-20:00',
-        saturday: '10:00-14:00',
-        sunday: 'Cerrado'
-      },
-      emergencyAvailable: true,
-      joinDate: '2023-06-15T10:00:00Z'
-    },
-    {
-      id: 'prof_002',
-      name: 'Dr. María González - Veterinaria',
-      type: 'individual',
-      services: ['veterinary', 'home_visits'],
-      description: 'Veterinaria especializada en medicina felina y consultas a domicilio. Más de 15 años de experiencia.',
-      address: 'Consultas a domicilio en Barcelona y alrededores',
-      city: 'Barcelona',
-      province: 'barcelona',
-      phone: '+34 93 456 7890',
-      email: 'dra.gonzalez@veterinaria.com',
-      website: null,
-      whatsapp: '+34 600 234 567',
-      logo: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop',
-      images: [
-        'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=300&fit=crop'
-      ],
-      rating: 4.9,
-      reviewsCount: 89,
-      verified: true,
-      openingHours: {
-        monday: '10:00-18:00',
-        tuesday: '10:00-18:00',
-        wednesday: '10:00-18:00',
-        thursday: '10:00-18:00',
-        friday: '10:00-18:00',
-        saturday: '10:00-14:00',
-        sunday: 'Cerrado'
-      },
-      emergencyAvailable: false,
-      joinDate: '2023-08-20T14:30:00Z'
-    },
-    {
-      id: 'prof_003',
-      name: 'PetGrooming Valencia',
-      type: 'business',
-      services: ['grooming', 'dog_trainer', 'daycare'],
-      description: 'Centro de estética canina y felina. Ofrecemos servicios de peluquería, adiestramiento y guardería.',
-      address: 'Avenida del Puerto 45, Valencia',
-      city: 'Valencia',
-      province: 'valencia',
-      phone: '+34 96 789 0123',
-      email: 'info@petgrooming.com',
-      website: 'https://petgrooming-valencia.com',
-      whatsapp: '+34 600 345 678',
-      logo: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=200&h=200&fit=crop',
-      images: [
-        'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=300&fit=crop'
-      ],
-      rating: 4.6,
-      reviewsCount: 203,
-      verified: true,
-      openingHours: {
-        monday: '09:00-19:00',
-        tuesday: '09:00-19:00',
-        wednesday: '09:00-19:00',
-        thursday: '09:00-19:00',
-        friday: '09:00-19:00',
-        saturday: '09:00-17:00',
-        sunday: 'Cerrado'
-      },
-      emergencyAvailable: false,
-      joinDate: '2023-05-10T09:15:00Z'
-    },
-    {
-      id: 'prof_004',
-      name: 'Centro Canino Bilbao',
-      type: 'business',
-      services: ['dog_trainer', 'daycare'],
-      description: 'Centro especializado en adiestramiento canino y servicios de guardería. Instalaciones modernas y seguras.',
-      address: 'Polígono Industrial Asua, Bilbao',
-      city: 'Bilbao',
-      province: 'vizcaya',
-      phone: '+34 94 567 8901',
-      email: 'info@centrocanino.com',
-      website: 'https://centrocanino-bilbao.com',
-      whatsapp: '+34 600 567 890',
-      logo: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200&h=200&fit=crop',
-      images: [
-        'https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=300&fit=crop'
-      ],
-      rating: 4.7,
-      reviewsCount: 94,
-      verified: true,
-      openingHours: {
-        monday: '08:00-18:00',
-        tuesday: '08:00-18:00',
-        wednesday: '08:00-18:00',
-        thursday: '08:00-18:00',
-        friday: '08:00-18:00',
-        saturday: '09:00-15:00',
-        sunday: 'Cerrado'
-      },
-      emergencyAvailable: false,
-      joinDate: '2023-07-12T11:20:00Z'
-    }
-  ];
 
   // Servicios ordenados alfabéticamente (sin hospedaje)
   const serviceOptions = [
@@ -183,16 +50,29 @@ const ProfessionalsDirectory = () => {
     }))
   ];
 
+  // ✅ NUEVA LÓGICA: Cargar profesionales desde Firebase
   useEffect(() => {
-    // Simulate loading
     const loadProfessionals = async () => {
       setIsLoading(true);
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setProfessionals(mockProfessionals);
-        setFilteredProfessionals(mockProfessionals);
+        // Consulta a Firebase: solo usuarios con role='professional'
+        const professionalsRef = collection(db, 'users');
+        const q = query(professionalsRef, where('role', '==', 'professional'));
+        const querySnapshot = await getDocs(q);
+        
+        // Mapear los documentos a un array de objetos
+        const professionalsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        setProfessionals(professionalsData);
+        setFilteredProfessionals(professionalsData);
       } catch (error) {
-        console.error('Error loading professionals:', error);
+        console.error('Error loading professionals from Firebase:', error);
+        // Si hay error, mostramos array vacío
+        setProfessionals([]);
+        setFilteredProfessionals([]);
       } finally {
         setIsLoading(false);
       }
@@ -208,16 +88,16 @@ const ProfessionalsDirectory = () => {
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(prof =>
-        prof.name.toLowerCase().includes(searchTerm) ||
-        prof.description.toLowerCase().includes(searchTerm) ||
-        prof.city.toLowerCase().includes(searchTerm)
+        prof.name?.toLowerCase().includes(searchTerm) ||
+        prof.description?.toLowerCase().includes(searchTerm) ||
+        prof.city?.toLowerCase().includes(searchTerm)
       );
     }
 
     // Service filter
     if (filters.service) {
       filtered = filtered.filter(prof =>
-        prof.services.includes(filters.service)
+        prof.services?.includes(filters.service)
       );
     }
 
@@ -229,7 +109,7 @@ const ProfessionalsDirectory = () => {
     // City filter
     if (filters.city) {
       filtered = filtered.filter(prof =>
-        prof.city.toLowerCase().includes(filters.city.toLowerCase())
+        prof.city?.toLowerCase().includes(filters.city.toLowerCase())
       );
     }
 
@@ -285,9 +165,9 @@ const ProfessionalsDirectory = () => {
 
   const handleWhatsApp = (professional) => {
     const message = encodeURIComponent(
-      `Hola, estoy interesado en sus servicios de ${professional.services.map(s => getServiceLabel(s)).join(', ')}. ¿Podrían darme más información?`
+      `Hola, estoy interesado en sus servicios de ${professional.services?.map(s => getServiceLabel(s)).join(', ')}. ¿Podrían darme más información?`
     );
-    const whatsappUrl = `https://wa.me/${professional.whatsapp.replace(/\s+/g, '')}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${professional.whatsapp?.replace(/\s+/g, '')}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -296,7 +176,7 @@ const ProfessionalsDirectory = () => {
     const body = encodeURIComponent(
       `Hola,
 
-Estoy interesado en sus servicios de ${professional.services.map(s => getServiceLabel(s)).join(', ')}.
+Estoy interesado en sus servicios de ${professional.services?.map(s => getServiceLabel(s)).join(', ')}.
 
 ¿Podrían proporcionarme más información sobre disponibilidad y precios?
 
@@ -308,8 +188,8 @@ Gracias.`
 
   const renderStars = (rating) => {
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
+    const fullStars = Math.floor(rating || 0);
+    const hasHalfStar = (rating || 0) % 1 !== 0;
 
     for (let i = 0; i < fullStars; i++) {
       stars.push(
@@ -323,7 +203,7 @@ Gracias.`
       );
     }
 
-    const emptyStars = 5 - Math.ceil(rating);
+    const emptyStars = 5 - Math.ceil(rating || 0);
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
         <Icon key={`empty-${i}`} name="Star" size={16} className="text-gray-300" />
@@ -506,49 +386,59 @@ Gracias.`
                         <span>{getTypeLabel(professional.type)}</span>
                       </div>
                       
-                      <div className="flex items-center space-x-1 mb-2">
-                        <div className="flex items-center space-x-1">
-                          {renderStars(professional.rating)}
+                      {professional.rating && (
+                        <div className="flex items-center space-x-1 mb-2">
+                          <div className="flex items-center space-x-1">
+                            {renderStars(professional.rating)}
+                          </div>
+                          <span className="text-sm font-medium text-text-primary">
+                            {professional.rating}
+                          </span>
+                          {professional.reviewsCount && (
+                            <span className="text-sm text-text-secondary">
+                              ({professional.reviewsCount})
+                            </span>
+                          )}
                         </div>
-                        <span className="text-sm font-medium text-text-primary">
-                          {professional.rating}
-                        </span>
-                        <span className="text-sm text-text-secondary">
-                          ({professional.reviewsCount})
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div className="flex items-center space-x-2 text-sm text-text-secondary mb-3">
-                    <Icon name="MapPin" size={14} />
-                    <span className="line-clamp-1">{professional.address}</span>
-                  </div>
-
-                  {/* Services */}
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-2">
-                      {professional.services.slice(0, 3).map((service) => (
-                        <span
-                          key={service}
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary-100 text-secondary border border-secondary/20"
-                        >
-                          {getServiceLabel(service)}
-                        </span>
-                      ))}
-                      {professional.services.length > 3 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-text-muted bg-opacity-10 text-text-muted border border-text-muted border-opacity-20">
-                          +{professional.services.length - 3}
-                        </span>
                       )}
                     </div>
                   </div>
 
+                  {/* Location */}
+                  {professional.address && (
+                    <div className="flex items-center space-x-2 text-sm text-text-secondary mb-3">
+                      <Icon name="MapPin" size={14} />
+                      <span className="line-clamp-1">{professional.address}</span>
+                    </div>
+                  )}
+
+                  {/* Services */}
+                  {professional.services && professional.services.length > 0 && (
+                    <div className="mb-4">
+                      <div className="flex flex-wrap gap-2">
+                        {professional.services.slice(0, 3).map((service) => (
+                          <span
+                            key={service}
+                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary-100 text-secondary border border-secondary/20"
+                          >
+                            {getServiceLabel(service)}
+                          </span>
+                        ))}
+                        {professional.services.length > 3 && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-text-muted bg-opacity-10 text-text-muted border border-text-muted border-opacity-20">
+                            +{professional.services.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Description */}
-                  <p className="text-sm text-text-secondary mb-4 line-clamp-2">
-                    {professional.description}
-                  </p>
+                  {professional.description && (
+                    <p className="text-sm text-text-secondary mb-4 line-clamp-2">
+                      {professional.description}
+                    </p>
+                  )}
 
                   {/* Emergency Badge */}
                   {professional.emergencyAvailable && (
@@ -572,13 +462,15 @@ Gracias.`
                       </button>
                     )}
                     
-                    <button
-                      onClick={() => handleEmail(professional)}
-                      className="flex items-center justify-center space-x-2 px-4 py-3 border border-border text-text-primary rounded-lg font-medium transition-all duration-200 hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-primary-300 active:transform active:scale-95"
-                    >
-                      <Icon name="Mail" size={16} />
-                      <span className="text-sm">Email</span>
-                    </button>
+                    {professional.email && (
+                      <button
+                        onClick={() => handleEmail(professional)}
+                        className="flex items-center justify-center space-x-2 px-4 py-3 border border-border text-text-primary rounded-lg font-medium transition-all duration-200 hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-primary-300 active:transform active:scale-95"
+                      >
+                        <Icon name="Mail" size={16} />
+                        <span className="text-sm">Email</span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Additional Actions */}
