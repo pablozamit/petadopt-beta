@@ -14,7 +14,7 @@ import QuickActionsFAB from 'components/ui/QuickActionsFAB';
 const PublicPetAdoptionHomepage = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  const [pets, setPets] = useState([]); // ✅ NUEVO: Estado para mascotas reales
+  const [pets, setPets] = useState([]);
   const [filters, setFilters] = useState({
     search: '',
     species: '',
@@ -30,17 +30,14 @@ const PublicPetAdoptionHomepage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const petsPerPage = 27;
 
-  // ✅ NUEVO: Cargar mascotas desde Firebase
   useEffect(() => {
     const loadPets = async () => {
       setIsLoading(true);
       try {
-        // Consulta a Firebase: solo mascotas con status='active'
         const petsRef = collection(db, 'pets');
         const q = query(petsRef, where('status', '==', 'active'));
         const querySnapshot = await getDocs(q);
         
-        // Mapear los documentos a un array de objetos
         const petsData = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
@@ -58,11 +55,9 @@ const PublicPetAdoptionHomepage = () => {
     loadPets();
   }, []);
 
-  // Memoized filtered pets for better performance
   const filteredPets = useMemo(() => {
-    let filtered = pets; // ✅ CAMBIADO: Ahora usa el estado de pets reales
+    let filtered = pets;
 
-    // Search filter
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(pet =>
@@ -72,7 +67,6 @@ const PublicPetAdoptionHomepage = () => {
       );
     }
 
-    // Apply all other filters
     if (filters.species) {
       filtered = filtered.filter(pet => pet.species === filters.species);
     }
@@ -83,11 +77,17 @@ const PublicPetAdoptionHomepage = () => {
           pet.age?.includes('meses') || 
           (pet.age?.includes('año') && parseInt(pet.age) <= 1)
         );
+      } else if (filters.age === 'Young') {
+        filtered = filtered.filter(pet => 
+          pet.age?.includes('año') && 
+          parseInt(pet.age) >= 1 && 
+          parseInt(pet.age) <= 3
+        );
       } else if (filters.age === 'Adult') {
         filtered = filtered.filter(pet => 
           pet.age?.includes('año') && 
-          parseInt(pet.age) >= 2 && 
-          parseInt(pet.age) <= 6
+          parseInt(pet.age) >= 3 && 
+          parseInt(pet.age) <= 7
         );
       } else if (filters.age === 'Senior') {
         filtered = filtered.filter(pet => 
@@ -128,14 +128,12 @@ const PublicPetAdoptionHomepage = () => {
     }
 
     return filtered;
-  }, [filters, pets]); // ✅ CAMBIADO: Agregado 'pets' a las dependencias
+  }, [filters, pets]);
 
-  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [filteredPets.length]);
 
-  // Calculate pagination
   const totalPages = Math.ceil(filteredPets.length / petsPerPage);
   const startIndex = (currentPage - 1) * petsPerPage;
   const currentPets = filteredPets.slice(startIndex, startIndex + petsPerPage);
@@ -177,11 +175,9 @@ const PublicPetAdoptionHomepage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="bg-surface border-b border-border-light shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Icon name="Heart" size={20} color="white" />
@@ -191,7 +187,6 @@ const PublicPetAdoptionHomepage = () => {
               </span>
             </div>
 
-            {/* Navigation - Orden corregido: Acceso Protectoras, Acceso Profesionales, Directorio Profesional, Mi Panel */}
             <div className="flex items-center space-x-4">
               <button
                 onClick={handleLogin}
@@ -229,10 +224,8 @@ const PublicPetAdoptionHomepage = () => {
         </div>
       </header>
 
-      {/* Navigation Breadcrumbs */}
       <NavigationBreadcrumbs />
 
-      {/* Hero Section Simplificado - Sin buscadores ni botones */}
       <section className="relative bg-gradient-to-br from-primary-50 to-secondary-50 py-16 lg:py-24 overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -251,7 +244,6 @@ const PublicPetAdoptionHomepage = () => {
         </div>
       </section>
 
-      {/* Advanced Filter Bar */}
       <AdvancedFilterBar 
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -259,15 +251,12 @@ const PublicPetAdoptionHomepage = () => {
         resultsCount={filteredPets.length}
       />
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Pet Grid */}
         <PetGrid 
           pets={currentPets}
           isLoading={isLoading}
         />
 
-        {/* Pagination */}
         {!isLoading && filteredPets.length > 0 && (
           <Pagination
             currentPage={currentPage}
@@ -278,7 +267,6 @@ const PublicPetAdoptionHomepage = () => {
           />
         )}
 
-        {/* No Results */}
         {!isLoading && filteredPets.length === 0 && (
           <div className="text-center py-16">
             <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -301,13 +289,9 @@ const PublicPetAdoptionHomepage = () => {
         )}
       </main>
 
-      {/* Floating Favorites Button */}
       <FloatingFavoritesButton />
-
-      {/* Quick Actions FAB */}
       <QuickActionsFAB />
 
-      {/* Footer */}
       <footer className="bg-surface border-t border-border-light mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -390,7 +374,6 @@ const PublicPetAdoptionHomepage = () => {
             </div>
           </div>
 
-          {/* Páginas Legales */}
           <div className="border-t border-border-light mt-8 pt-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
               <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
