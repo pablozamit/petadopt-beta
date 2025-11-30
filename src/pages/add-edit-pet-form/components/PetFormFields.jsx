@@ -208,6 +208,192 @@ Ejemplo:
           </span>
         </div>
       </div>
+
+      {/* NUEVO - Convivencia */}
+      <div className="lg:col-span-2">
+        <label className="block text-sm font-medium text-text-primary mb-3">
+          Convivencia
+        </label>
+        <p className="text-sm text-text-secondary mb-4">
+          ¿Con quién puede convivir esta mascota?
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Con perros */}
+          <div className="p-4 border border-border rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-text-primary flex items-center space-x-2">
+                <Icon name="Dog" size={16} />
+                <span>Con perros</span>
+              </span>
+            </div>
+            <select
+              value={formData.compatibility?.dogs ?? ''}
+              onChange={(e) => onChange('compatibility', {
+                ...formData.compatibility,
+                dogs: e.target.value === '' ? null : e.target.value === 'true'
+              })}
+              className="input-field text-sm"
+            >
+              <option value="">No especificado</option>
+              <option value="true">Sí</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+
+          {/* Con gatos */}
+          <div className="p-4 border border-border rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-text-primary flex items-center space-x-2">
+                <Icon name="Cat" size={16} />
+                <span>Con gatos</span>
+              </span>
+            </div>
+            <select
+              value={formData.compatibility?.cats ?? ''}
+              onChange={(e) => onChange('compatibility', {
+                ...formData.compatibility,
+                cats: e.target.value === '' ? null : e.target.value === 'true'
+              })}
+              className="input-field text-sm"
+            >
+              <option value="">No especificado</option>
+              <option value="true">Sí</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+
+          {/* Con niños */}
+          <div className="p-4 border border-border rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-text-primary flex items-center space-x-2">
+                <Icon name="Users" size={16} />
+                <span>Con niños</span>
+              </span>
+            </div>
+            <select
+              value={formData.compatibility?.children ?? ''}
+              onChange={(e) => onChange('compatibility', {
+                ...formData.compatibility,
+                children: e.target.value === '' ? null : e.target.value === 'true'
+              })}
+              className="input-field text-sm"
+            >
+              <option value="">No especificado</option>
+              <option value="true">Sí</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* NUEVO - Necesidades Especiales */}
+      <div className="lg:col-span-2">
+        <label className="block text-sm font-medium text-text-primary mb-3">
+          Necesidades Especiales
+        </label>
+        
+        <div className="space-y-4">
+          {/* Toggle principal */}
+          <div className="flex items-center justify-between p-4 bg-surface rounded-lg border border-border">
+            <div className="flex items-center space-x-3">
+              <Icon name="Heart" size={20} className="text-accent" />
+              <div>
+                <p className="font-medium text-text-primary">¿Tiene necesidades especiales?</p>
+                <p className="text-sm text-text-secondary">Medicación, dieta, discapacidad, etc.</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => onChange('specialNeeds', {
+                ...formData.specialNeeds,
+                hasSpecialNeeds: !formData.specialNeeds?.hasSpecialNeeds
+              })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                formData.specialNeeds?.hasSpecialNeeds ? 'bg-primary' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  formData.specialNeeds?.hasSpecialNeeds ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Detalles si tiene necesidades especiales */}
+          {formData.specialNeeds?.hasSpecialNeeds && (
+            <div className="ml-4 space-y-3 pl-4 border-l-2 border-accent">
+              <label className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  checked={formData.specialNeeds?.medication || false}
+                  onChange={(e) => onChange('specialNeeds', {
+                    ...formData.specialNeeds,
+                    medication: e.target.checked
+                  })}
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+                <span className="text-sm text-text-primary">Requiere medicación</span>
+              </label>
+
+              <label className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  checked={formData.specialNeeds?.specialDiet || false}
+                  onChange={(e) => onChange('specialNeeds', {
+                    ...formData.specialNeeds,
+                    specialDiet: e.target.checked
+                  })}
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+                <span className="text-sm text-text-primary">Dieta especial</span>
+              </label>
+
+              <label className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  checked={formData.specialNeeds?.physicalDisability || false}
+                  onChange={(e) => onChange('specialNeeds', {
+                    ...formData.specialNeeds,
+                    physicalDisability: e.target.checked
+                  })}
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+                <span className="text-sm text-text-primary">Discapacidad física</span>
+              </label>
+
+              <label className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  checked={formData.specialNeeds?.behavioralNeeds || false}
+                  onChange={(e) => onChange('specialNeeds', {
+                    ...formData.specialNeeds,
+                    behavioralNeeds: e.target.checked
+                  })}
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+                <span className="text-sm text-text-primary">Necesidades de comportamiento</span>
+              </label>
+
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">
+                  Detalles adicionales
+                </label>
+                <textarea
+                  value={formData.specialNeeds?.details || ''}
+                  onChange={(e) => onChange('specialNeeds', {
+                    ...formData.specialNeeds,
+                    details: e.target.value
+                  })}
+                  rows={3}
+                  className="input-field resize-none text-sm"
+                  placeholder="Describe las necesidades especiales con más detalle..."
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
