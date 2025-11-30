@@ -1,202 +1,164 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import Icon from 'components/AppIcon';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/firebaseConfig';
+import Icon from 'components/AppIcon';
+import AdaptiveHeader from 'components/ui/AdaptiveHeader';
+import UnifiedSearchBar from 'components/ui/UnifiedSearchBar';
+import LoadingSpinner from 'components/ui/LoadingSpinner';
 
 const ProfessionalsDirectory = () => {
+  const navigate = useNavigate();
   const [professionals, setProfessionals] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedProvince, setSelectedProvince] = useState('');
 
+  // Cargar profesionales reales desde Firebase
   useEffect(() => {
     const fetchProfessionals = async () => {
       try {
         setLoading(true);
+        // Buscamos usuarios cuyo rol sea 'professional'
         const q = query(
-          collection(db, 'professionals'),
-          orderBy('createdAt', 'desc')
+          collection(db, 'users'), 
+          where('role', '==', 'professional')
         );
-        const snapshot = await getDocs(q);
-        const prosList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setProfessionals(prosList);
+        
+        const querySnapshot = await getDocs(q);
+        const prosData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        setProfessionals(prosData);
       } catch (error) {
-        console.error('Error fetching professionals:', error);
+        console.error("Error cargando profesionales:", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchProfessionals();
   }, []);
 
-  const filteredPros = professionals.filter((pro) => {
-    if (categoryFilter === 'all') return true;
-    return pro.category === categoryFilter;
+  // Filtrado en cliente (por búsqueda o provincia)
+  const filteredProfessionals = professionals.filter(pro => {
+    const matchesSearch = pro.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          pro.specialty?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesProvince = selectedProvince ? pro.province === selectedProvince : true;
+    
+    return matchesSearch && matchesProvince;
   });
 
-  const categories = [
-    { value: 'all', label: 'Todos', icon: 'Users' },
-    { value: 'vet', label: 'Veterinarios', icon: 'Stethoscope' },
-    { value: 'trainer', label: 'Educadores', icon: 'Zap' },
-    { value: 'groomer', label: 'Peluqueras', icon: 'Scissors' },
-    { value: 'residence', label: 'Residencias', icon: 'Home' }
-  ];
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Icon name="Activity" size={48} className="animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-text-secondary text-lg">Cargando profesionales...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleContact = (proId) => {
+    // Si el usuario no está logueado, llevarlo al login, si no, al detalle o chat
+    navigate(`/professional/${proId}`);
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <header className="bg-gradient-to-r from-primary via-primary/90 to-secondary-500 text-white py-28 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <Icon name="ShieldCheck" size={64} className="mx-auto mb-8 opacity-90" />
-          <h1 className="text-5xl md:text-6xl font-heading font-bold mb-6 leading-tight">
-            Profesionales que cuidan de tus compaeros
+      <AdaptiveHeader />
+      
+      <main className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        {/* Header de la sección */}
+        <div className="text-center mb-10">
+          <h1 className="text-3xl md:text-4xl font-heading font-bold text-text-primary mb-4">
+            Profesionales de confianza
           </h1>
-          <p className="text-xl md:text-2xl max-w-3xl mx-auto mb-12 leading-relaxed opacity-95">
-            Veterinarios, educadores, peluqueras y residencias que entienden que tu animal es un miembro ms de la familia. Todos verificados, cerca de ti y con valores alineados.
+          <p className="text-text-secondary max-w-2xl mx-auto text-lg">
+            Encuentra veterinarios, educadores y cuidadores verificados cerca de ti para ayudar a tu nueva mascota.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <button 
-              className="btn-primary-inverted px-12 py-5 rounded-2xl text-xl font-bold shadow-2xl hover:shadow-white/20 transition-all"
-              onClick={() => setCategoryFilter('vet')}
+        </div>
+
+        {/* Buscador y Filtros */}
+        <div className="bg-surface p-4 rounded-2xl shadow-sm border border-border-light mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <UnifiedSearchBar 
+                placeholder="Buscar por nombre o especialidad..." 
+                onSearch={setSearchTerm}
+              />
+            </div>
+            <select 
+              className="p-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none min-w-[200px]"
+              value={selectedProvince}
+              onChange={(e) => setSelectedProvince(e.target.value)}
             >
-              Buscar veterinario
-            </button>
-            <button className="btn-outline-inverted px-12 py-5 rounded-2xl text-xl font-bold">
-              Ver todos
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Filtro categora */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex justify-center mb-16">
-          <div className="bg-surface rounded-2xl p-1 shadow-lg border border-border-light flex gap-1">
-            {categories.map((cat) => (
-              <button
-                key={cat.value}
-                onClick={() => setCategoryFilter(cat.value)}
-                className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
-                  categoryFilter === cat.value
-                    ? 'bg-primary text-white shadow-md'
-                    : 'text-text-secondary hover:text-primary hover:bg-primary/5'
-                }`}
-              >
-                <Icon name={cat.icon} size={16} />
-                {cat.label}
-              </button>
-            ))}
+              <option value="">Todas las provincias</option>
+              <option value="madrid">Madrid</option>
+              <option value="barcelona">Barcelona</option>
+              <option value="valencia">Valencia</option>
+              {/* Se pueden añadir más dinámicamente si es necesario */}
+            </select>
           </div>
         </div>
 
-        {/* Lista profesionales */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPros.length > 0 ? (
-            filteredPros.map((pro) => (
-              <div
-                key={pro.id}
-                className="group bg-surface rounded-2xl shadow-sm border border-border-light hover:shadow-xl hover:border-primary/60 overflow-hidden transition-all duration-300 cursor-pointer"
-                onClick={() => navigate(`/professional/${pro.id}`)}
-              >
-                {/* Logo */}
-                <div className="h-56 bg-gradient-to-br from-primary/5 relative overflow-hidden">
-                  <img
-                    src={pro.logo || '/placeholder-pro.jpg'}
-                    alt={pro.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-primary shadow-md">
-                    {pro.category?.toUpperCase()}
-                  </div>
-                </div>
-
-                {/* Contenido */}
+        {/* Lista de Resultados */}
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <LoadingSpinner size="lg" text="Buscando expertos..." />
+          </div>
+        ) : filteredProfessionals.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProfessionals.map((pro) => (
+              <div key={pro.id} className="bg-surface rounded-xl border border-border-light hover:shadow-md transition-all duration-300 overflow-hidden group">
                 <div className="p-6">
-                  <h3 className="text-xl font-heading font-bold text-text-primary mb-2 truncate">
-                    {pro.name}
-                  </h3>
-                  <p className="text-text-secondary text-sm mb-1">
-                    {pro.location}
-                  </p>
-                  <div className="flex items-center gap-1 text-xs text-text-muted mb-4">
-                    <Icon name="Star" size={14} className="text-accent fill-accent" />
-                    <span>{pro.rating || 4.8}</span> ({pro.reviews || 23} reseas)
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {pro.photoURL ? (
+                        <img src={pro.photoURL} alt={pro.displayName} className="w-full h-full object-cover" />
+                      ) : (
+                        <Icon name="User" size={32} className="text-primary" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-text-primary group-hover:text-primary transition-colors">
+                        {pro.displayName || 'Profesional'}
+                      </h3>
+                      <p className="text-primary font-medium text-sm">
+                        {pro.specialty || 'Servicios Veterinarios'}
+                      </p>
+                      <div className="flex items-center gap-1 text-text-secondary text-xs mt-1">
+                        <Icon name="MapPin" size={12} />
+                        <span className="capitalize">{pro.province || 'España'}</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm text-text-secondary line-clamp-3 mb-6">
-                    {pro.description || 'Profesional especializado en el cuidado integral de tu mascota.'}
+                  
+                  <p className="text-text-secondary text-sm line-clamp-2 mb-4 h-10">
+                    {pro.bio || 'Profesional verificado de la red Oh My Pawz dedicado al bienestar animal.'}
                   </p>
-                  <div className="flex items-center gap-4 text-xs text-text-muted">
-                    <span className="flex items-center gap-1">
-                      <Icon name="Phone" size={14} />
-                      {pro.phone || '+34 600 123 456'}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Icon name="MapPin" size={14} />
-                      {pro.distance || '2.4 km'}
-                    </span>
+
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {pro.services?.slice(0, 3).map((service, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-background border border-border rounded-md text-xs text-text-secondary">
+                        {service}
+                      </span>
+                    ))}
                   </div>
-                  <button className="w-full mt-6 btn-primary py-3 rounded-xl font-semibold text-sm">
-                    Ver perfil y reservar
+
+                  <button 
+                    onClick={() => handleContact(pro.id)}
+                    className="w-full btn-outline flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all"
+                  >
+                    <Icon name="MessageCircle" size={18} />
+                    Contactar
                   </button>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-20">
-              <Icon name="Search" size={64} className="mx-auto mb-6 text-text-muted" />
-              <h3 className="text-2xl font-bold text-text-primary mb-4">
-                No hay profesionales de esta categora cerca
-              </h3>
-              <p className="text-text-secondary mb-8">
-                Prueba con otra categora o amplia el radio de bsqueda.
-              </p>
-              <button 
-                onClick={() => setCategoryFilter('all')}
-                className="btn-primary px-8 py-3 rounded-xl font-semibold"
-              >
-                Ver todos
-              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-surface rounded-2xl border border-dashed border-border">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="Search" size={32} className="text-text-muted" />
             </div>
-          )}
-        </div>
-
-        {/* CTA final */}
-        {filteredPros.length > 0 && (
-          <div className="text-center mt-20">
-            <h3 className="text-2xl font-bold text-text-primary mb-4">
-              {professionals.length} profesionales disponibles
-            </h3>
-            <button className="btn-outline px-12 py-4 rounded-xl text-lg font-bold">
-              Ver ms profesionales
-            </button>
+            <h3 className="text-lg font-bold text-text-primary mb-2">No se encontraron profesionales</h3>
+            <p className="text-text-secondary">Intenta cambiar los filtros de búsqueda.</p>
           </div>
         )}
-      </div>
-
-      {/* Footer CTA */}
-      <div className="mt-20 py-16 bg-gradient-to-r from-primary to-secondary-500 text-white text-center">
-        <h2 className="text-3xl font-heading font-bold mb-6">
-          Eres profesional del sector?
-        </h2>
-        <p className="text-xl opacity-95 mb-8">
-          Unete a nuestra comunidad y llega a miles de adoptantes sensibles.
-        </p>
-        <button className="bg-white text-primary px-12 py-5 rounded-2xl text-xl font-bold shadow-2xl hover:shadow-white/20">
-          Quiero aparecer en la gua
-        </button>
-      </div>
+      </main>
     </div>
   );
 };
