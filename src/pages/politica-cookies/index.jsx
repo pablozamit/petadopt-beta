@@ -1,265 +1,336 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from 'components/AppIcon';
-import AdaptiveHeader from 'components/ui/AdaptiveHeader';
 
 const PoliticaCookies = () => {
   const navigate = useNavigate();
 
-  const handleBackToHome = () => {
-    navigate('/');
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <AdaptiveHeader />
-      
-      <main className="pt-16">
-        {/* Header */}
-        <section className="bg-gradient-to-br from-primary-50 to-secondary-50 py-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-4xl font-heading font-bold text-text-primary mb-4">
-                Política de Cookies
-              </h1>
-              <p className="text-lg text-text-secondary">
-                Información sobre el uso de cookies en AdoptaEspaña
+      {/* Header */}
+      <header className="bg-surface border-b border-border-light shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-2"
+            >
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Icon name="Heart" size={20} color="white" />
+              </div>
+              <span className="font-heading font-bold text-xl text-text-primary">
+                AdoptaEspaña
+              </span>
+            </button>
+
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center space-x-2 text-text-secondary hover:text-primary transition-colors duration-200"
+            >
+              <Icon name="ArrowLeft" size={20} />
+              <span>Volver</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-surface rounded-xl shadow-sm border border-border-light p-8">
+          <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">
+            Política de Cookies
+          </h1>
+          <p className="text-sm text-text-secondary mb-8">
+            Última actualización: 30 de agosto de 2023
+          </p>
+
+          <div className="prose prose-slate max-w-none">
+            {/* Información sobre Cookies */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                Información sobre Cookies
+              </h2>
+              <p className="text-text-secondary mb-4">
+                Conforme con la Ley 34/2002, de 11 de julio, de servicios de la sociedad de la información y de comercio electrónico (LSSI), en relación con el Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo, de 27 de abril de 2016, General de Protección de Datos (GDPR) y la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos y Garantía de los Derechos Digitales (LOPDGDD), es obligado obtener el consentimiento expreso del usuario de todas las páginas web que usan cookies prescindibles, antes de que este navegue por ellas.
               </p>
-            </div>
-          </div>
-        </section>
+            </section>
 
-        {/* Content */}
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-surface rounded-xl p-8 shadow-sm border border-border-light">
-            <div className="prose prose-lg max-w-none">
+            {/* ¿Qué son las cookies? */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                ¿Qué son las Cookies?
+              </h2>
+              <p className="text-text-secondary mb-4">
+                Las cookies y otras tecnologías similares tales como local shared objects, flash cookies o píxeles, son herramientas empleadas por los servidores Web para almacenar y recuperar información acerca de sus visitantes, así como para ofrecer un correcto funcionamiento del sitio.
+              </p>
+              <p className="text-text-secondary mb-4">
+                Mediante el uso de estos dispositivos se permite al servidor Web recordar algunos datos concernientes al usuario, como sus preferencias para la visualización de las páginas de ese servidor, nombre y contraseña, productos que más le interesan, etc.
+              </p>
+            </section>
+
+            {/* Cookies afectadas por la normativa */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                Cookies Afectadas por la Normativa y Cookies Exceptuadas
+              </h2>
+              <p className="text-text-secondary mb-4">
+                Según la directiva de la UE, las cookies que requieren el consentimiento informado por parte del usuario son las cookies de analítica y las de publicidad y afiliación, quedando exceptuadas las de carácter técnico y las necesarias para el funcionamiento del sitio web o la prestación de servicios expresamente solicitados por el usuario.
+              </p>
+            </section>
+
+            {/* Tipos de cookies según finalidad */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                Tipos de Cookies según la Finalidad
+              </h2>
               
-              {/* Aviso Legal */}
-              <div className="mb-8 p-6 bg-warning-light rounded-lg border border-warning">
-                <div className="flex items-start space-x-3">
-                  <Icon name="AlertTriangle" size={24} className="text-warning flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-heading font-semibold text-warning-700 mb-2">
-                      Aviso Legal Importante
-                    </h3>
-                    <p className="text-warning-700 text-sm">
-                      <strong>Esta política de cookies es un documento de demostración.</strong> 
-                      Antes de implementar en producción, es <strong>obligatorio consultar con un abogado especializado 
-                      en protección de datos</strong> para asegurar el cumplimiento del RGPD y la legislación española vigente.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies técnicas y funcionales
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Son aquellas que permiten al usuario la navegación a través de una página web, plataforma o aplicación y la utilización de las diferentes opciones o servicios que en ella existan.
+              </p>
 
-              {/* Sección 1 */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Info" size={24} className="text-primary mr-3" />
-                  1. ¿Qué son las cookies?
-                </h2>
-                <p className="text-text-secondary leading-relaxed">
-                  Una cookie es un pequeño archivo de texto que los sitios web almacenan en el dispositivo del usuario (ordenador, móvil, tablet, etc.) al navegar por la web. Sirve para recordar información sobre su visita, como idioma preferido, inicio de sesión o configuración de visualización.
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies analíticas
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Son aquellas que permiten al responsable de las mismas el seguimiento y análisis del comportamiento de los usuarios de los sitios web a los que están vinculadas. La información recogida mediante este tipo de cookies se utiliza en la medición de la actividad de los sitios web, aplicación o plataforma y para la elaboración de perfiles de navegación de los usuarios de dichos sitios, aplicaciones y plataformas, con el fin de introducir mejoras en función del análisis de los datos de uso que hacen los usuarios del servicio.
+              </p>
+
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies publicitarias
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Son aquellas que permiten la gestión, de la forma más eficaz posible, de los espacios publicitarios que, en su caso, el editor haya incluido en una página web, aplicación o plataforma desde la que presta el servicio solicitado en base a criterios como el contenido editado o la frecuencia en la que se muestran los anuncios.
+              </p>
+
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies de publicidad comportamental
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Recogen información sobre las preferencias y elecciones personales del usuario (retargeting) para permitir la gestión, de la forma más eficaz posible, de los espacios publicitarios que, en su caso, el editor haya incluido en una página web, aplicación o plataforma desde la que presta el servicio solicitado.
+              </p>
+
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies sociales
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Son establecidas por las plataformas de redes sociales en los servicios para permitirle compartir contenido con sus amigos y redes. Las plataformas de medios sociales tienen la capacidad de rastrear su actividad en línea fuera de los Servicios. Esto puede afectar al contenido y los mensajes que ve en otros servicios que visita.
+              </p>
+
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies de afiliados
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Permiten hacer un seguimiento de las visitas procedentes de otras webs, con las que el sitio web establece un contrato de afiliación (empresas de afiliación).
+              </p>
+
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies de seguridad
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Almacenan información cifrada para evitar que los datos guardados en ellas sean vulnerables a ataques maliciosos de terceros.
+              </p>
+            </section>
+
+            {/* Según la propiedad */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                Según la Propiedad
+              </h2>
+              
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies propias
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Son aquellas que se envían al equipo terminal del usuario desde un equipo o dominio gestionado por el propio editor y desde el que se presta el servicio solicitado por el usuario.
+              </p>
+
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies de terceros
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Son aquellas que se envían al equipo terminal del usuario desde un equipo o dominio que no es gestionado por el editor, sino por otra entidad que trata los datos obtenidos través de las cookies.
+              </p>
+            </section>
+
+            {/* Según el plazo */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                Según el Plazo de Conservación
+              </h2>
+              
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies de sesión
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Son un tipo de cookies diseñadas para recabar y almacenar datos mientras el usuario accede a una página web.
+              </p>
+
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Cookies persistentes
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Son un tipo de cookies en el que los datos siguen almacenados en el terminal y pueden ser accedidos y tratados durante un período definido por el responsable de la cookie, y que puede ir de unos minutos a varios años.
+              </p>
+            </section>
+
+            {/* Tratamiento de datos personales */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                Tratamiento de Datos Personales
+              </h2>
+              <p className="text-text-secondary mb-4">
+                <strong>OH MY PAWZ, S.L.</strong> es el Responsable del tratamiento de los datos personales del Interesado y le informa de que estos datos serán tratados de conformidad con lo dispuesto en el Reglamento (UE) 2016/679, de 27 de abril de 2016 (GDPR), por lo que se le facilita la siguiente información del tratamiento:
+              </p>
+
+              <div className="bg-primary-50 border-l-4 border-primary p-4 mb-4">
+                <p className="text-text-primary mb-2">
+                  <strong>Fines del tratamiento:</strong> según se especifica en el apartado de cookies que se utilizan en este sitio web.
+                </p>
+                <p className="text-text-primary mb-2">
+                  <strong>Legitimación del tratamiento:</strong> salvo en los casos en los que resulte necesario para la navegación por la web, por consentimiento del interesado (art. 6.1 GDPR).
+                </p>
+                <p className="text-text-primary mb-2">
+                  <strong>Criterios de conservación de los datos:</strong> según se especifica en el apartado de cookies utilizadas en la web.
+                </p>
+                <p className="text-text-primary mb-2">
+                  <strong>Comunicación de los datos:</strong> no se comunicarán los datos a terceros, excepto en cookies propiedad de terceros o por obligación legal.
                 </p>
               </div>
 
-              {/* Sección 2 */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Settings" size={24} className="text-primary mr-3" />
-                  2. Tipos de cookies que utilizamos
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-6">
-                  En nuestra página web utilizamos cookies propias y de terceros para mejorar la experiencia del usuario, garantizar el correcto funcionamiento del sitio y recopilar estadísticas anónimas.
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Derechos que asisten al Interesado
+              </h3>
+              <ul className="list-disc list-inside text-text-secondary space-y-2 mb-4">
+                <li>Derecho a retirar el consentimiento en cualquier momento.</li>
+                <li>Derecho de acceso, rectificación, portabilidad y supresión de sus datos, y de limitación u oposición a su tratamiento.</li>
+                <li>Derecho a presentar una reclamación ante la Autoridad de control (www.aepd.es) si considera que el tratamiento no se ajusta a la normativa vigente.</li>
+              </ul>
+
+              <div className="bg-secondary-50 border-l-4 border-secondary p-4">
+                <p className="text-text-primary mb-2">
+                  <strong>Datos de contacto para ejercer sus derechos:</strong>
                 </p>
-
-                {/* Subsecciones */}
-                <div className="space-y-6">
-                  <div className="bg-background rounded-lg p-6 border border-border-light">
-                    <h3 className="text-xl font-heading font-semibold text-text-primary mb-3 flex items-center">
-                      <Icon name="Shield" size={20} className="text-success mr-2" />
-                      A. Cookies técnicas o necesarias
-                    </h3>
-                    <p className="text-text-secondary mb-2">
-                      Estas cookies son esenciales para el funcionamiento de la web y no requieren consentimiento del usuario.
-                    </p>
-                    <p className="text-text-muted text-sm">
-                      <strong>Ejemplo:</strong> recordar la selección de idioma o permitir la navegación segura.
-                    </p>
-                  </div>
-
-                  <div className="bg-background rounded-lg p-6 border border-border-light">
-                    <h3 className="text-xl font-heading font-semibold text-text-primary mb-3 flex items-center">
-                      <Icon name="BarChart3" size={20} className="text-secondary mr-2" />
-                      B. Cookies de análisis o medición
-                    </h3>
-                    <p className="text-text-secondary mb-2">
-                      Permiten conocer el comportamiento de los usuarios en la web y mejorar su rendimiento.
-                    </p>
-                    <p className="text-text-muted text-sm">
-                      <strong>Herramientas utilizadas:</strong> Google Analytics (datos anonimizados).
-                    </p>
-                  </div>
-
-                  <div className="bg-background rounded-lg p-6 border border-border-light">
-                    <h3 className="text-xl font-heading font-semibold text-text-primary mb-3 flex items-center">
-                      <Icon name="User" size={20} className="text-accent mr-2" />
-                      C. Cookies de personalización
-                    </h3>
-                    <p className="text-text-secondary">
-                      Permiten al usuario acceder con características predeterminadas como idioma o tipo de navegador.
-                    </p>
-                  </div>
-
-                  <div className="bg-background rounded-lg p-6 border border-border-light">
-                    <h3 className="text-xl font-heading font-semibold text-text-primary mb-3 flex items-center">
-                      <Icon name="Target" size={20} className="text-warning mr-2" />
-                      D. Cookies publicitarias (si aplica)
-                    </h3>
-                    <p className="text-text-secondary mb-2">
-                      Recogen información sobre los hábitos de navegación para mostrar publicidad personalizada.
-                    </p>
-                    <p className="text-text-muted text-sm">
-                      <strong>Herramientas utilizadas:</strong> Meta Pixel, Google Ads (solo si se activan campañas).
-                    </p>
-                  </div>
-                </div>
+                <p className="text-text-primary mb-1">OH MY PAWZ, S.L.</p>
+                <p className="text-text-primary mb-1">Calle Luis Martínez, 21 - 39005 Santander (Cantabria)</p>
+                <p className="text-text-primary">E-mail: info@paw-unique.com</p>
               </div>
+            </section>
 
-              {/* Sección 3 */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Globe" size={24} className="text-primary mr-3" />
-                  3. Cookies de terceros
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  En algunos casos, compartimos información con servicios externos que instalan sus propias cookies desde nuestros dominios, como:
-                </p>
-                <ul className="list-disc list-inside text-text-secondary space-y-2 ml-4">
-                  <li>Google Analytics</li>
-                  <li>YouTube (para incrustación de vídeos)</li>
-                  <li>Meta (si usamos píxeles publicitarios)</li>
-                  <li>Stripe o PayPal (si se ofrece pasarela de pago)</li>
-                </ul>
-                <p className="text-text-secondary leading-relaxed mt-4">
-                  Cada uno de ellos tiene sus propias políticas de cookies y privacidad, que puedes consultar en sus respectivas páginas.
-                </p>
-              </div>
+            {/* Cómo gestionar las cookies */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                Cómo Gestionar las Cookies desde el Navegador
+              </h2>
 
-              {/* Sección 4 */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Settings2" size={24} className="text-primary mr-3" />
-                  4. ¿Cómo puedes configurar o rechazar las cookies?
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  Al acceder a nuestro sitio web, se muestra un banner de configuración de cookies que permite:
-                </p>
-                <ul className="list-disc list-inside text-text-secondary space-y-2 ml-4 mb-4">
-                  <li>Aceptar todas las cookies.</li>
-                  <li>Rechazar todas las cookies no esenciales.</li>
-                  <li>Configurar tus preferencias de manera granular.</li>
-                </ul>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  Además, puedes cambiar la configuración de cookies en cualquier momento desde el botón flotante "Configuración de Cookies" situado en la parte inferior de la página.
-                </p>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  También puedes gestionar tus preferencias directamente desde tu navegador:
-                </p>
-                <div className="bg-background rounded-lg p-4 border border-border-light">
-                  <ul className="space-y-2 text-text-secondary">
-                    <li className="flex items-center">
-                      <Icon name="Chrome" size={16} className="text-primary mr-2" />
-                      <strong>Chrome:</strong> 
-                      <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary-600 ml-2">
-                        https://support.google.com/chrome/answer/95647
-                      </a>
-                    </li>
-                    <li className="flex items-center">
-                      <Icon name="Firefox" size={16} className="text-primary mr-2" />
-                      <strong>Firefox:</strong> 
-                      <a href="https://support.mozilla.org/es/kb/habilitar-y-deshabilitar-cookies-sitios-web" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary-600 ml-2">
-                        https://support.mozilla.org/es/kb/habilitar-y-deshabilitar-cookies-sitios-web
-                      </a>
-                    </li>
-                    <li className="flex items-center">
-                      <Icon name="Safari" size={16} className="text-primary mr-2" />
-                      <strong>Safari:</strong> 
-                      <a href="https://support.apple.com/es-es/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary-600 ml-2">
-                        https://support.apple.com/es-es/guide/safari/sfri11471/mac
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Eliminar las cookies del dispositivo
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Las cookies que ya están en un dispositivo se pueden eliminar borrando el historial del navegador, con lo que se suprimen las cookies de todos los sitios web visitados. Sin embargo, también se puede perder parte de la información guardada (por ejemplo, los datos de inicio de sesión o las preferencias de sitio web).
+              </p>
 
-              {/* Sección 5 */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Clock" size={24} className="text-primary mr-3" />
-                  5. Tiempo de conservación
-                </h2>
-                <p className="text-text-secondary leading-relaxed">
-                  Las cookies se conservarán durante el tiempo estrictamente necesario para las finalidades para las que han sido recopiladas. En ningún caso se conservarán más de 24 meses, según la categoría y proveedor.
-                </p>
-              </div>
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Gestionar las cookies específicas del sitio
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Para tener un control más preciso de las cookies específicas de cada sitio, los usuarios pueden ajustar su configuración de privacidad y cookies en el navegador.
+              </p>
 
-              {/* Sección 6 */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="Scale" size={24} className="text-primary mr-3" />
-                  6. Base legal para el uso de cookies
-                </h2>
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <Icon name="CheckCircle" size={20} className="text-success mt-0.5" />
-                    <div>
-                      <strong className="text-text-primary">Cookies técnicas:</strong>
-                      <span className="text-text-secondary"> interés legítimo del responsable del tratamiento.</span>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Icon name="CheckCircle" size={20} className="text-success mt-0.5" />
-                    <div>
-                      <strong className="text-text-primary">Resto de cookies:</strong>
-                      <span className="text-text-secondary"> consentimiento del usuario expresado a través del banner o panel de configuración.</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
+                Bloquear las cookies
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Aunque la mayoría de los navegadores modernos se pueden configurar para evitar que se instalen cookies en los dispositivos, eso puede obligar al ajuste manual de determinadas preferencias cada vez que se visite un sitio o página. Además, algunos servicios y características pueden no funcionar correctamente (por ejemplo, los inicios de sesión con perfil).
+              </p>
+            </section>
 
-              {/* Sección 7 */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-heading font-bold text-text-primary mb-4 flex items-center">
-                  <Icon name="RefreshCw" size={24} className="text-primary mr-3" />
-                  7. Actualizaciones de esta política
-                </h2>
-                <p className="text-text-secondary leading-relaxed mb-4">
-                  Esta política de cookies puede modificarse en función de exigencias legislativas o instrucciones de la Agencia Española de Protección de Datos. Te recomendamos revisarla periódicamente.
-                </p>
-                <div className="bg-accent-50 rounded-lg p-4 border border-accent-200">
-                  <p className="text-accent-700 font-medium">
-                    <strong>Última actualización:</strong> 15 de enero de 2025
-                  </p>
-                  <p className="text-accent-600 text-sm mt-1">
-                    <strong>Próxima revisión programada:</strong> 15 de enero de 2026
-                  </p>
-                </div>
-              </div>
-
-              {/* Botón de vuelta */}
-              <div className="text-center pt-8 border-t border-border-light">
-                <button
-                  onClick={handleBackToHome}
-                  className="btn-primary flex items-center space-x-2 mx-auto"
-                >
-                  <Icon name="ArrowLeft" size={20} />
-                  <span>Volver al inicio</span>
-                </button>
-              </div>
-            </div>
+            {/* Cómo eliminar cookies */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold text-text-primary mb-4">
+                Cómo Eliminar las Cookies de los Navegadores más Comunes
+              </h2>
+              <ul className="space-y-2 text-text-secondary">
+                <li>
+                  <strong>Chrome:</strong>{' '}
+                  <a
+                    href="https://support.google.com/chrome/answer/95647?hl=es"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    https://support.google.com/chrome/answer/95647?hl=es
+                  </a>
+                </li>
+                <li>
+                  <strong>Edge:</strong>{' '}
+                  <a
+                    href="https://support.microsoft.com/es-es/microsoft-edge/eliminar-las-cookies-en-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Eliminar cookies en Microsoft Edge
+                  </a>
+                </li>
+                <li>
+                  <strong>Explorer:</strong>{' '}
+                  <a
+                    href="https://support.microsoft.com/es-es/help/278835/how-to-delete-cookie-files-in-internet-explorer"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Eliminar cookies en Internet Explorer
+                  </a>
+                </li>
+                <li>
+                  <strong>Firefox:</strong>{' '}
+                  <a
+                    href="https://www.mozilla.org/es-ES/privacy/websites/cookies/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    https://www.mozilla.org/es-ES/privacy/websites/cookies/
+                  </a>
+                </li>
+                <li>
+                  <strong>Safari:</strong>{' '}
+                  <a
+                    href="https://support.apple.com/es-es/guide/safari/sfri11471/mac"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    https://support.apple.com/es-es/guide/safari/sfri11471/mac
+                  </a>
+                </li>
+                <li>
+                  <strong>Opera:</strong>{' '}
+                  <a
+                    href="https://help.opera.com/en/latest/security-and-privacy/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    https://help.opera.com/en/latest/security-and-privacy/
+                  </a>
+                </li>
+              </ul>
+            </section>
           </div>
-        </section>
+        </div>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-surface border-t border-border-light mt-16 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-text-secondary">
+          <p>© {new Date().getFullYear()} OH MY PAWZ, S.L. - AdoptaEspaña. Todos los derechos reservados.</p>
+        </div>
+      </footer>
     </div>
   );
 };
