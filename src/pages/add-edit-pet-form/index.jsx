@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { doc, getDoc, addDoc, updateDoc, collection } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../../firebaseConfig'; // Importamos Firebase real
+import { db, storage } from '../../firebaseConfig';
 import { useAuth } from 'hooks/useAuth';
 
 import AdaptiveHeader from 'components/ui/AdaptiveHeader';
@@ -28,9 +28,25 @@ const AddEditPetForm = () => {
     size: '',
     province: '',
     description: '',
-    images: [], // URLs para previsualización (mezcla de Firebase URLs y blob URLs locales)
-    imageFiles: [], // Archivos RAW nuevos para subir
+    images: [],
+    imageFiles: [],
     primaryImageIndex: 0,
+    // NUEVO - Convivencia
+    compatibility: {
+      dogs: null,
+      cats: null,
+      children: null,
+      otherPets: null
+    },
+    // NUEVO - Necesidades especiales
+    specialNeeds: {
+      hasSpecialNeeds: false,
+      medication: false,
+      specialDiet: false,
+      physicalDisability: false,
+      behavioralNeeds: false,
+      details: ''
+    },
     tags: {
       vaccinated: false,
       sterilized: false,
@@ -68,7 +84,22 @@ const AddEditPetForm = () => {
             }
             setFormData({
               ...data,
-              imageFiles: [] // Al editar, empezamos sin archivos nuevos
+              imageFiles: [],
+              // Asegurar que los nuevos campos existan
+              compatibility: data.compatibility || {
+                dogs: null,
+                cats: null,
+                children: null,
+                otherPets: null
+              },
+              specialNeeds: data.specialNeeds || {
+                hasSpecialNeeds: false,
+                medication: false,
+                specialDiet: false,
+                physicalDisability: false,
+                behavioralNeeds: false,
+                details: ''
+              }
             });
           } else {
             alert("Mascota no encontrada");
@@ -94,7 +125,6 @@ const AddEditPetForm = () => {
     if (!formData.province) newErrors.province = 'La provincia es obligatoria';
     if (!formData.description.trim()) newErrors.description = 'La descripción es obligatoria';
     
-    // Validar que haya imágenes (ya sean URLs existentes o archivos nuevos)
     if (formData.images.length === 0) newErrors.images = 'Debe subir al menos una imagen';
 
     setErrors(newErrors);
@@ -112,18 +142,11 @@ const AddEditPetForm = () => {
 
   const handleImageUpload = (newImages, newFiles, indexToRemove) => {
     if (indexToRemove !== undefined) {
-      // Lógica de borrado
       setFormData(prev => {
         const updatedImages = prev.images.filter((_, i) => i !== indexToRemove);
-        // Intentamos mantener sincronizados los archivos, aunque es complejo mezclar URLs y Files.
-        // En este MVP, si borras, simplemente actualizamos las previsualizaciones.
-        // Los newFiles se limpiarán al subir solo lo que quede, o se pueden filtrar si llevamos un control estricto.
-        // Simplificación: Mantenemos newFiles tal cual y solo nos fiamos de lo que el usuario ve (updatedImages).
-        // Al guardar, subiremos solo los archivos que coincidan con blobs activos o filtraremos.
         return { ...prev, images: updatedImages };
       });
     } else {
-      // Lógica de añadir
       setFormData(prev => ({
         ...prev,
         images: newImages,
@@ -136,29 +159,15 @@ const AddEditPetForm = () => {
   const uploadImagesToFirebase = async () => {
     const uploadedUrls = [];
     
-    // Identificar qué imágenes son ya URLs (antiguas) y cuáles son Blobs (nuevas)
-    // Nota: Esta es una simplificación. Lo ideal es mapear indices.
-    
-    // Subir solo los archivos nuevos (los que tenemos en imageFiles)
-    // PERO debemos respetar el orden visual final que el usuario ve en formData.images
-    
     for (const imgUrl of formData.images) {
       if (imgUrl.startsWith('http')) {
-        // Es una imagen ya existente en Firebase
         uploadedUrls.push(imgUrl);
-      } else {
-        // Es un Blob URL local, necesitamos encontrar su archivo correspondiente
-        // Buscamos en imageFiles (esto es un poco hacky por los blobs, pero funcional para MVP)
-        // Lo correcto es subir todos los imageFiles y añadirlos.
       }
     }
 
-    // Estrategia Robustez MVP: Subir todos los 'imageFiles' pendientes y añadirlos a la lista
     const newUrls = [];
     if (formData.imageFiles && formData.imageFiles.length > 0) {
         for (const file of formData.imageFiles) {
-            // Check si este archivo sigue siendo relevante (si su blob url sigue en images)
-            // Para simplificar hoy: subimos todos los nuevos archivos.
             const storageRef = ref(storage, `pets/${user.uid}/${Date.now()}_${file.name}`);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
@@ -166,8 +175,6 @@ const AddEditPetForm = () => {
         }
     }
 
-    // Reconstruir el array final de imágenes
-    // Mantenemos las URLs viejas que no se borraron y añadimos las nuevas
     const finalImages = formData.images.filter(img => img.startsWith('http')).concat(newUrls);
     return finalImages;
   };
@@ -177,19 +184,20 @@ const AddEditPetForm = () => {
     setIsLoading(true);
 
     try {
-      // 1. Subir imágenes nuevas a Firebase Storage
       const finalImageUrls = await uploadImagesToFirebase();
 
-      // 2. Preparar datos para Firestore
       const petData = {
         name: formData.name,
         age: formData.age,
+        ageCategory: formData.age,
         species: formData.species,
         size: formData.size,
         province: formData.province,
         description: formData.description,
         images: finalImageUrls,
-        primaryImageIndex: 0, // Simplificación: reset index o manejar lógica compleja
+        primaryImageIndex: 0,
+        compatibility: formData.compatibility,
+        specialNeeds: formData.specialNeeds,
         tags: formData.tags,
         shelterId: user.uid,
         shelterName: user.displayName || 'Refugio',
@@ -205,7 +213,7 @@ const AddEditPetForm = () => {
       }
       
       setShowSuccessMessage(true);
-      setTimeout(() => navigate('/shelter-dashboard'), 1000); // Volver al dashboard
+      setTimeout(() => navigate('/shelter-dashboard'), 1000);
       
     } catch (error) {
       console.error('Error publicando mascota:', error);
@@ -217,7 +225,6 @@ const AddEditPetForm = () => {
 
   const handleCancel = () => navigate('/shelter-dashboard');
 
-  // Cálculo de progreso visual
   const getFormProgress = () => {
     const requiredFields = ['name', 'age', 'species', 'size', 'province', 'description'];
     const filledFields = requiredFields.filter(field => formData[field] && formData[field].toString().trim());
@@ -238,7 +245,6 @@ const AddEditPetForm = () => {
             <h1 className="text-3xl font-heading font-bold text-text-primary">
               {isEdit ? 'Editar Mascota' : 'Añadir Nueva Mascota'}
             </h1>
-            {/* Barra de progreso simplificada para móvil/desktop */}
             <div className="mt-4 w-full h-2 bg-surface rounded-full overflow-hidden">
                <div className="h-full bg-primary transition-all duration-300" style={{ width: `${getFormProgress()}%` }} />
             </div>
@@ -284,7 +290,6 @@ const AddEditPetForm = () => {
               isLoading={isLoading}
               onPublish={handlePublish}
               onCancel={handleCancel}
-              // Ocultamos "Guardar Borrador" por ahora para simplificar el MVP
               onSaveDraft={() => alert("Función de borrador próximamente")} 
             />
           </form>
