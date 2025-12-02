@@ -6,7 +6,6 @@ import AdaptiveHeader from 'components/ui/AdaptiveHeader';
 import { db } from '@/firebaseConfig';
 import { useAuth } from '../../hooks/useAuth';
 
-
 const ShelterDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -73,35 +72,7 @@ const ShelterDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-surface border-b border-border-light shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center">
-                <Icon name="Shield" size={20} className="text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-heading font-bold text-text-primary">
-                  Panel de Gestión
-                </h1>
-                <p className="text-text-secondary">
-                  {user.email} • Protectora
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button 
-                onClick={() => navigate('/add-edit-pet-form')}
-                className="hidden sm:flex items-center gap-2 btn-primary px-6 py-2 rounded-xl font-semibold"
-              >
-                <Icon name="Plus" size={18} />
-                Nueva Mascota
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdaptiveHeader />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
         {/* Stats */}
