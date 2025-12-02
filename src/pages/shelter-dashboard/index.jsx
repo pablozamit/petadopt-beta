@@ -6,8 +6,8 @@ import {
   where, 
   onSnapshot, 
   deleteDoc, 
-  doc, 
-  orderBy 
+  doc
+  // orderBy // Desactivado temporalmente para evitar error de índice
 } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from 'hooks/useAuth';
@@ -29,23 +29,23 @@ const ShelterDashboard = () => {
     totalPets: 0,
     adoptedPets: 0,
     activeListings: 0,
-    pendingInquiries: 0 // Esto lo conectaremos más adelante cuando hagamos el sistema de mensajes
+    pendingInquiries: 0
   });
 
   // 1. Cargar mascotas en tiempo real
   useEffect(() => {
     if (authLoading) return;
+    
+    // Si no hay usuario, redirigir al login
     if (!user) {
       navigate('/authentication-login-register');
       return;
     }
 
-    // Consulta: Dame las mascotas donde shelterId == MI_ID, ordenadas por fecha de creación
-    // Nota: Si te da error de índice en la consola, quita el 'orderBy' temporalmente
+    // Consulta SIMPLIFICADA: Sin orderBy para evitar errores de índice
     const q = query(
       collection(db, "pets"), 
       where("shelterId", "==", user.uid)
-      // orderBy("createdAt", "desc") 
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -61,12 +61,12 @@ const ShelterDashboard = () => {
       const active = petsData.filter(p => p.status === 'active').length;
       const adopted = petsData.filter(p => p.status === 'adopted').length;
       
-      setStats(prev => ({
-        ...prev,
+      setStats({
         totalPets: total,
         activeListings: active,
-        adoptedPets: adopted
-      }));
+        adoptedPets: adopted,
+        pendingInquiries: 0 // Placeholder
+      });
 
       setLoadingPets(false);
     }, (error) => {
@@ -134,7 +134,7 @@ const ShelterDashboard = () => {
           </button>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid - Usando el componente robusto */}
         <DashboardStats stats={stats} />
 
         {/* Main Content Grid */}
@@ -165,7 +165,7 @@ const ShelterDashboard = () => {
 
           {/* Recent Activity Sidebar */}
           <div className="space-y-6">
-             {/* Pasamos activity vacía por ahora hasta que tengamos la colección de 'activities' */}
+             {/* Pasamos activity vacía por ahora */}
             <RecentActivity activity={[]} />
             
             {/* Quick Tips Card */}
