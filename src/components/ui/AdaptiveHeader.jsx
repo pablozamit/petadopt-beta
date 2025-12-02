@@ -46,105 +46,104 @@ const AdaptiveHeader = () => {
             </button>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - Enlaces visibles para TODOS */}
           <div className="hidden md:flex items-center space-x-6">
+            <Link
+              to="/"
+              className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200 ${
+                location.pathname === '/' ? 'text-primary font-semibold' : ''
+              }`}
+            >
+              <Icon name="Home" size={18} />
+              <span>Mascotas</span>
+            </Link>
+
+            <Link
+              to="/como-funciona"
+              className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200"
+            >
+              <Icon name="HelpCircle" size={18} />
+              <span>Cómo Funciona</span>
+            </Link>
+
+            <Link
+              to="/shelters"
+              className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-accent-50 transition-all duration-200 ${
+                location.pathname === '/shelters' ? 'text-accent font-semibold' : ''
+              }`}
+            >
+              <Icon name="Building2" size={18} />
+              <span>Refugios</span>
+            </Link>
+
+            <Link
+              to="/professionals"
+              className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-secondary-50 transition-all duration-200 ${
+                location.pathname === '/professionals' ? 'text-secondary font-semibold' : ''
+              }`}
+            >
+              <Icon name="Stethoscope" size={18} />
+              <span>Profesionales</span>
+            </Link>
+
+            {/* Auth Buttons - Solo esto cambia según el estado */}
             {!user ? (
-              <>
-                {/* 3 DIRECTORIOS */}
-                <Link
-                  to="/"
-                  className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200 ${
-                    location.pathname === '/' ? 'text-primary font-semibold' : ''
-                  }`}
+              /* LOGIN/REGISTRO Dropdown */
+              <div className="relative">
+                <button
+                  onClick={() => setShowLoginDropdown(!showLoginDropdown)}
+                  className="btn-primary flex items-center space-x-2 px-5 py-2 rounded-lg"
                 >
-                  <Icon name="Home" size={18} />
-                  <span>Mascotas</span>
-                </Link>
+                  <Icon name="User" size={18} />
+                  <span>Acceder</span>
+                  <Icon name={showLoginDropdown ? "ChevronUp" : "ChevronDown"} size={16} />
+                </button>
 
-                <Link
-                  to="/como-funciona"
-                  className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200"
-                >
-                  <Icon name="HelpCircle" size={18} />
-                  <span>Cómo Funciona</span>
-                </Link>
+                {showLoginDropdown && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-border-light py-2 z-50">
+                    <button
+                      onClick={() => handleNavigation('/authentication-login-register')}
+                      className="w-full text-left px-4 py-3 hover:bg-surface transition-colors flex items-center space-x-3"
+                    >
+                      <Icon name="Heart" size={18} className="text-accent" />
+                      <div>
+                        <div className="font-medium text-text-primary">Soy Adoptante</div>
+                        <div className="text-xs text-text-secondary">Busco una mascota</div>
+                      </div>
+                    </button>
 
-                <Link
-                  to="/shelters"
-                  className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-accent-50 transition-all duration-200 ${
-                    location.pathname === '/shelters' ? 'text-accent font-semibold' : ''
-                  }`}
-                >
-                  <Icon name="Building2" size={18} />
-                  <span>Refugios</span>
-                </Link>
+                    <div className="border-t border-border-light my-1"></div>
 
-                <Link
-                  to="/professionals"
-                  className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-secondary-50 transition-all duration-200 ${
-                    location.pathname === '/professionals' ? 'text-secondary font-semibold' : ''
-                  }`}
-                >
-                  <Icon name="Stethoscope" size={18} />
-                  <span>Profesionales</span>
-                </Link>
+                    <button
+                      onClick={() => handleNavigation('/authentication-login-register')}
+                      className="w-full text-left px-4 py-3 hover:bg-primary-50 transition-colors flex items-center space-x-3"
+                    >
+                      <Icon name="Building2" size={18} className="text-primary" />
+                      <div>
+                        <div className="font-medium text-text-primary">Soy Refugio</div>
+                        <div className="text-xs text-text-secondary">Gestiono mascotas</div>
+                      </div>
+                    </button>
 
-                {/* LOGIN/REGISTRO Dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowLoginDropdown(!showLoginDropdown)}
-                    className="btn-primary flex items-center space-x-2 px-5 py-2 rounded-lg"
-                  >
-                    <Icon name="User" size={18} />
-                    <span>Acceder</span>
-                    <Icon name={showLoginDropdown ? "ChevronUp" : "ChevronDown"} size={16} />
-                  </button>
-
-                  {showLoginDropdown && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-border-light py-2 z-50">
-                      <button
-                        onClick={() => handleNavigation('/authentication-login-register')}
-                        className="w-full text-left px-4 py-3 hover:bg-surface transition-colors flex items-center space-x-3"
-                      >
-                        <Icon name="Heart" size={18} className="text-accent" />
-                        <div>
-                          <div className="font-medium text-text-primary">Soy Adoptante</div>
-                          <div className="text-xs text-text-secondary">Busco una mascota</div>
-                        </div>
-                      </button>
-
-                      <div className="border-t border-border-light my-1"></div>
-
-                      <button
-                        onClick={() => handleNavigation('/authentication-login-register')}
-                        className="w-full text-left px-4 py-3 hover:bg-primary-50 transition-colors flex items-center space-x-3"
-                      >
-                        <Icon name="Building2" size={18} className="text-primary" />
-                        <div>
-                          <div className="font-medium text-text-primary">Soy Refugio</div>
-                          <div className="text-xs text-text-secondary">Gestiono mascotas</div>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => handleNavigation('/professional-login')}
-                        className="w-full text-left px-4 py-3 hover:bg-secondary-50 transition-colors flex items-center space-x-3"
-                      >
-                        <Icon name="Stethoscope" size={18} className="text-secondary" />
-                        <div>
-                          <div className="font-medium text-text-primary">Soy Profesional</div>
-                          <div className="text-xs text-text-secondary">Veterinario, educador...</div>
-                        </div>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </>
+                    <button
+                      onClick={() => handleNavigation('/professional-login')}
+                      className="w-full text-left px-4 py-3 hover:bg-secondary-50 transition-colors flex items-center space-x-3"
+                    >
+                      <Icon name="Stethoscope" size={18} className="text-secondary" />
+                      <div>
+                        <div className="font-medium text-text-primary">Soy Profesional</div>
+                        <div className="text-xs text-text-secondary">Veterinario, educador...</div>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
+              /* LOGGED IN Actions */
               <div className="flex items-center space-x-4">
                 <button
                   onClick={handleLogout}
-                  className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-error-light hover:text-error transition-all duration-200"
+                  className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-error-light hover:text-error transition-all duration-200 border border-transparent hover:border-error-light"
                 >
                   <Icon name="LogOut" size={18} />
                   <span>Cerrar Sesión</span>
@@ -168,46 +167,48 @@ const AdaptiveHeader = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-border-light bg-background">
             <div className="px-2 pt-2 pb-3 space-y-1">
+              {/* Enlaces comunes para Móvil */}
+              <Link
+                to="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-surface"
+              >
+                <Icon name="Home" size={20} />
+                <span className="font-medium">Mascotas</span>
+              </Link>
+
+              <Link
+                to="/como-funciona"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-surface"
+              >
+                <Icon name="HelpCircle" size={20} />
+                <span className="font-medium">Cómo Funciona</span>
+              </Link>
+
+              <Link
+                to="/shelters"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-accent hover:bg-surface"
+              >
+                <Icon name="Building2" size={20} />
+                <span className="font-medium">Refugios</span>
+              </Link>
+
+              <Link
+                to="/professionals"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-secondary hover:bg-surface"
+              >
+                <Icon name="Stethoscope" size={20} />
+                <span className="font-medium">Profesionales</span>
+              </Link>
+
+              <div className="border-t border-border-light my-2"></div>
+
+              {/* Lógica condicional Auth para Móvil */}
               {!user ? (
                 <>
-                  <Link
-                    to="/"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-surface"
-                  >
-                    <Icon name="Home" size={20} />
-                    <span className="font-medium">Mascotas</span>
-                  </Link>
-
-                  <Link
-                    to="/como-funciona"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-surface"
-                  >
-                    <Icon name="HelpCircle" size={20} />
-                    <span className="font-medium">Cómo Funciona</span>
-                  </Link>
-
-                  <Link
-                    to="/shelters"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-accent hover:bg-surface"
-                  >
-                    <Icon name="Building2" size={20} />
-                    <span className="font-medium">Refugios</span>
-                  </Link>
-
-                  <Link
-                    to="/professionals"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-secondary hover:bg-surface"
-                  >
-                    <Icon name="Stethoscope" size={20} />
-                    <span className="font-medium">Profesionales</span>
-                  </Link>
-
-                  <div className="border-t border-border-light my-2"></div>
-
                   <button
                     onClick={() => handleNavigation('/authentication-login-register')}
                     className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:bg-surface"
