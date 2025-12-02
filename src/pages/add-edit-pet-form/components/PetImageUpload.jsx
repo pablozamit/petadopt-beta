@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 
-const PetImageUpload = ({ images, imageFiles, onImagesChange, onPrimaryImageChange, error }) => {
+// CORRECCIÓN: Añadimos 'primaryImageIndex' a las props recibidas
+const PetImageUpload = ({ images, imageFiles, onImagesChange, onPrimaryImageChange, primaryImageIndex, error }) => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -41,14 +42,13 @@ const PetImageUpload = ({ images, imageFiles, onImagesChange, onPrimaryImageChan
     });
 
     if (validFiles.length > 0) {
-      // 1. Crear URLs de previsualización para mostrar inmediatamente
+      // 1. Crear URLs de previsualización
       const newPreviews = validFiles.map(file => URL.createObjectURL(file));
       const updatedImages = [...images, ...newPreviews];
       
-      // 2. Guardar los archivos reales para subirlos luego a Firebase
+      // 2. Guardar los archivos reales
       const updatedFiles = [...(imageFiles || []), ...validFiles];
 
-      // Limit to 6 images
       if (updatedImages.length <= 6) {
         onImagesChange(updatedImages, updatedFiles);
       } else {
@@ -58,19 +58,11 @@ const PetImageUpload = ({ images, imageFiles, onImagesChange, onPrimaryImageChan
   };
 
   const removeImage = (index) => {
-    // Si borramos una imagen, debemos borrar su preview y su archivo asociado
-    // Nota: La lógica aquí asume que las imágenes nuevas están al final. 
-    // Para un MVP robusto, simplemente reconstruimos los arrays.
-    
     const newImages = images.filter((_, i) => i !== index);
+    onImagesChange(newImages, null, index);
     
-    // Si estamos borrando una imagen que es un archivo nuevo (no una URL ya existente de Firebase)
-    // necesitamos saber qué índice corresponde en imageFiles. 
-    // Por simplicidad en este MVP, pasamos la lógica al padre o asumimos sincronización.
-    // Aquí simplemente pasamos el índice al padre y él decide cómo filtrar imageFiles.
-    
-    onImagesChange(newImages, null, index); // index es el que se borra
-    
+    // Ajustar el índice principal si borramos una imagen
+    // Usamos 'primaryImageIndex' de las props, que ahora sí existe
     if (primaryImageIndex >= newImages.length) {
       onPrimaryImageChange(Math.max(0, newImages.length - 1));
     } else if (primaryImageIndex === index) {
