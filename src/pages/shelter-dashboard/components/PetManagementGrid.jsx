@@ -1,217 +1,162 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 
-const PetManagementGrid = ({ pets, selectedPets, onSelectPet, onEditPet, onDeletePet }) => {
-  const handleSelectPet = (petId) => {
-    if (selectedPets.includes(petId)) {
-      onSelectPet(selectedPets.filter(id => id !== petId));
-    } else {
-      onSelectPet([...selectedPets, petId]);
-    }
-  };
+const PetManagementGrid = ({ pets, onEdit, onDelete, onView }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
-  const handleSelectAll = () => {
-    if (selectedPets.length === pets.length) {
-      onSelectPet([]);
-    } else {
-      onSelectPet(pets.map(pet => pet.id));
-    }
-  };
+  // PROTECCIÓN CONTRA UNDEFINED:
+  // Si 'pets' no llega, usamos un array vacío para evitar el crash.
+  const safePets = pets || [];
+
+  const filteredPets = safePets.filter(pet => {
+    const matchesSearch = pet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (pet.breed || '').toLowerCase().includes(searchTerm.toLowerCase()); // Breed puede no existir
+    const matchesStatus = filterStatus === 'all' || pet.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      default:
-        return 'text-muted';
+      case 'active': return 'bg-success-light text-success border-success';
+      case 'pending': return 'bg-warning-light text-warning border-warning';
+      case 'adopted': return 'bg-primary-50 text-primary border-primary';
+      default: return 'bg-gray-100 text-gray-600 border-gray-200';
     }
   };
 
-  const getStatusText = (status) => {
+  const getStatusLabel = (status) => {
     switch (status) {
-      case 'active':
-        return 'Activo';
-      case 'pending':
-        return 'Pendiente';
-      default:
-        return 'Desconocido';
+      case 'active': return 'En Adopción';
+      case 'pending': return 'En Proceso';
+      case 'adopted': return 'Adoptado';
+      default: return status;
     }
   };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
-
-  if (pets.length === 0) {
-    return (
-      <div className="bg-surface rounded-xl p-8 shadow-sm border border-border-light text-center animate-fade-in">
-        <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Icon name="Heart" size={32} className="text-primary" />
-        </div>
-        <h3 className="text-xl font-heading font-semibold text-text-primary mb-2">
-          No hay mascotas registradas
-        </h3>
-        <p className="text-text-secondary mb-6">
-          Comienza añadiendo tu primera mascota para ayudarla a encontrar un hogar
-        </p>
-        <button
-          onClick={() => window.location.href = '/add-edit-pet-form'}
-          className="btn-primary flex items-center space-x-2 mx-auto"
-        >
-          <Icon name="Plus" size={20} />
-          <span>Añadir Primera Mascota</span>
-        </button>
-      </div>
-    );
-  }
 
   return (
-    <div className="bg-surface rounded-xl p-6 shadow-sm border border-border-light animate-fade-in">
-      {/* Header with bulk actions */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <h3 className="text-lg font-heading font-semibold text-text-primary">
-            Mis Mascotas ({pets.length})
-          </h3>
-          {pets.length > 0 && (
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedPets.length === pets.length}
-                onChange={handleSelectAll}
-                className="w-4 h-4 text-primary border-border rounded focus:ring-primary-300"
-              />
-              <span className="text-sm text-text-secondary">Seleccionar todo</span>
-            </label>
-          )}
-        </div>
-      </div>
-
-      {/* Pet Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pets.map((pet) => (
-          <div
-            key={pet.id}
-            className={`bg-background rounded-lg border-2 transition-all duration-300 hover:shadow-md hover:transform hover:translate-y-[-2px] ${
-              selectedPets.includes(pet.id) 
-                ? 'border-primary shadow-md' 
-                : 'border-border-light hover:border-primary-200'
-            }`}
-          >
-            {/* Selection checkbox */}
-            <div className="p-4 pb-0">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={selectedPets.includes(pet.id)}
-                  onChange={() => handleSelectPet(pet.id)}
-                  className="w-4 h-4 text-primary border-border rounded focus:ring-primary-300"
-                />
-                <span className="text-sm text-text-secondary">Seleccionar</span>
-              </label>
-            </div>
-
-            {/* Pet Image */}
-            <div className="px-4 pb-4">
-              <div className="relative w-full h-48 bg-surface rounded-lg overflow-hidden">
-                <Image
-                  src={pet.image}
-                  alt={pet.name}
-                  className="w-full h-full object-cover"
-                />
-                {pet.urgent && (
-                  <div className="absolute top-2 right-2 bg-warning text-white px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
-                    <Icon name="AlertTriangle" size={12} />
-                    <span>Urgente</span>
-                  </div>
-                )}
-                <div className={`absolute top-2 left-2 bg-${getStatusColor(pet.status)} text-white px-2 py-1 rounded-full text-xs font-medium`}>
-                  {getStatusText(pet.status)}
-                </div>
-              </div>
-            </div>
-
-            {/* Pet Info */}
-            <div className="px-4 pb-4">
-              <div className="mb-3">
-                <h4 className="font-heading font-semibold text-text-primary text-lg mb-1">
-                  {pet.name}
-                </h4>
-                <p className="text-text-secondary text-sm">
-                  {pet.breed} • {pet.age} • {pet.size}
-                </p>
-                <p className="text-text-muted text-sm flex items-center mt-1">
-                  <Icon name="MapPin" size={14} className="mr-1" />
-                  {pet.location}
-                </p>
-              </div>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1 mb-3">
-                {pet.tags.slice(0, 3).map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-secondary-100 text-secondary text-xs rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {pet.tags.length > 3 && (
-                  <span className="px-2 py-1 bg-text-muted bg-opacity-10 text-text-muted text-xs rounded-full">
-                    +{pet.tags.length - 3}
-                  </span>
-                )}
-              </div>
-
-              {/* Stats */}
-              <div className="flex items-center justify-between text-sm text-text-secondary mb-4">
-                <div className="flex items-center space-x-1">
-                  <Icon name="Calendar" size={14} />
-                  <span>{formatDate(pet.uploadDate)}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Icon name="Eye" size={14} />
-                  <span>{pet.viewCount} vistas</span>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => onEditPet(pet.id)}
-                  className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 transition-colors duration-200 text-sm"
-                >
-                  <Icon name="Edit" size={16} />
-                  <span>Editar</span>
-                </button>
-                <button
-                  onClick={() => onDeletePet(pet.id)}
-                  className="flex items-center justify-center px-3 py-2 bg-error text-white rounded-lg hover:bg-error-600 transition-colors duration-200"
-                >
-                  <Icon name="Trash2" size={16} />
-                </button>
-              </div>
-            </div>
+    <div className="bg-white rounded-xl shadow-sm border border-border-light overflow-hidden">
+      {/* Header & Filters */}
+      <div className="p-6 border-b border-border-light space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between bg-surface">
+        <div className="relative max-w-xs w-full">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Icon name="Search" size={18} className="text-text-muted" />
           </div>
-        ))}
+          <input
+            type="text"
+            placeholder="Buscar por nombre..."
+            className="input-field pl-10 py-2 text-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-text-secondary">Estado:</span>
+          <select
+            className="input-field py-2 text-sm w-auto"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="all">Todos</option>
+            <option value="active">En Adopción</option>
+            <option value="pending">En Proceso</option>
+            <option value="adopted">Adoptados</option>
+          </select>
+        </div>
       </div>
 
-      {/* Load More Button (for future pagination) */}
-      {pets.length >= 6 && (
-        <div className="text-center mt-8">
-          <button className="btn-outline flex items-center space-x-2 mx-auto">
-            <Icon name="ChevronDown" size={20} />
-            <span>Cargar más mascotas</span>
-          </button>
-        </div>
-      )}
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-background-light">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Mascota</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Estado</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Estadísticas</th>
+              <th className="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border-light">
+            {filteredPets.length > 0 ? (
+              filteredPets.map((pet) => (
+                <tr key={pet.id} className="hover:bg-surface transition-colors duration-150">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-border-light">
+                        <Image 
+                          src={pet.images && pet.images.length > 0 ? pet.images[0] : null} 
+                          alt={pet.name} 
+                          className="h-full w-full object-cover" 
+                        />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-text-primary">{pet.name}</div>
+                        <div className="text-xs text-text-secondary">{pet.species} • {pet.age}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs leading-5 font-semibold rounded-full border ${getStatusColor(pet.status)}`}>
+                      {getStatusLabel(pet.status)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center space-x-4 text-xs text-text-secondary">
+                      <div className="flex items-center space-x-1" title="Vistas">
+                        <Icon name="Eye" size={14} />
+                        <span>{pet.views || 0}</span>
+                      </div>
+                      <div className="flex items-center space-x-1" title="Favoritos">
+                        <Icon name="Heart" size={14} />
+                        <span>{pet.favorites || 0}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex items-center justify-end space-x-2">
+                      <button 
+                        onClick={() => onView(pet.id)}
+                        className="p-1 text-text-secondary hover:text-primary transition-colors" 
+                        title="Ver detalle"
+                      >
+                        <Icon name="ExternalLink" size={18} />
+                      </button>
+                      <button 
+                        onClick={() => onEdit(pet.id)}
+                        className="p-1 text-text-secondary hover:text-accent transition-colors" 
+                        title="Editar"
+                      >
+                        <Icon name="Edit" size={18} />
+                      </button>
+                      <button 
+                        onClick={() => onDelete(pet.id)}
+                        className="p-1 text-text-secondary hover:text-error transition-colors" 
+                        title="Eliminar"
+                      >
+                        <Icon name="Trash2" size={18} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="px-6 py-12 text-center text-text-secondary">
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <div className="p-3 bg-background rounded-full">
+                      <Icon name="Search" size={24} className="text-text-muted" />
+                    </div>
+                    <p>No se encontraron mascotas.</p>
+                    {searchTerm && <p className="text-xs">Prueba con otros términos de búsqueda.</p>}
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
