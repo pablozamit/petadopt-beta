@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import Icon from '../AppIcon';
 
 const AdaptiveHeader = () => {
@@ -112,35 +112,43 @@ const AdaptiveHeader = () => {
             {!isAuthenticated ? (
               <>
                 {/* 3 DIRECTORIOS */}
-                <button
-                  onClick={() => handleNavigation('/')}
+                <Link
+                  to="/"
                   className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200 ${
                     location.pathname === '/' ? 'text-primary font-semibold' : ''
                   }`}
                 >
                   <Icon name="Home" size={18} />
                   <span>Mascotas</span>
-                </button>
+                </Link>
 
-                <button
-                  onClick={() => handleNavigation('/shelters')}
+                <Link
+                  to="/como-funciona"
+                  className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200"
+                >
+                  <Icon name="HelpCircle" size={18} />
+                  <span>Cómo Funciona</span>
+                </Link>
+
+                <Link
+                  to="/shelters"
                   className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-accent-50 transition-all duration-200 ${
                     location.pathname === '/shelters' ? 'text-accent font-semibold' : ''
                   }`}
                 >
                   <Icon name="Building2" size={18} />
                   <span>Refugios</span>
-                </button>
+                </Link>
 
-                <button
-                  onClick={() => handleNavigation('/professionals')}
+                <Link
+                  to="/professionals"
                   className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-secondary-50 transition-all duration-200 ${
                     location.pathname === '/professionals' ? 'text-secondary font-semibold' : ''
                   }`}
                 >
                   <Icon name="Stethoscope" size={18} />
                   <span>Profesionales</span>
-                </button>
+                </Link>
 
                 {/* LOGIN/REGISTRO Dropdown */}
                 <div className="relative">
@@ -247,29 +255,41 @@ const AdaptiveHeader = () => {
             <div className="px-2 pt-2 pb-3 space-y-1">
               {!isAuthenticated ? (
                 <>
-                  <button
-                    onClick={() => handleNavigation('/')}
+                  <Link
+                    to="/"
+                    onClick={() => setIsMobileMenuOpen(false)}
                     className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-surface"
                   >
                     <Icon name="Home" size={20} />
                     <span className="font-medium">Mascotas</span>
-                  </button>
+                  </Link>
 
-                  <button
-                    onClick={() => handleNavigation('/shelters')}
+                  <Link
+                    to="/como-funciona"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-surface"
+                  >
+                    <Icon name="HelpCircle" size={20} />
+                    <span className="font-medium">Cómo Funciona</span>
+                  </Link>
+
+                  <Link
+                    to="/shelters"
+                    onClick={() => setIsMobileMenuOpen(false)}
                     className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-accent hover:bg-surface"
                   >
                     <Icon name="Building2" size={20} />
                     <span className="font-medium">Refugios</span>
-                  </button>
+                  </Link>
 
-                  <button
-                    onClick={() => handleNavigation('/professionals')}
+                  <Link
+                    to="/professionals"
+                    onClick={() => setIsMobileMenuOpen(false)}
                     className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-secondary hover:bg-surface"
                   >
                     <Icon name="Stethoscope" size={20} />
                     <span className="font-medium">Profesionales</span>
-                  </button>
+                  </Link>
 
                   <div className="border-t border-border-light my-2"></div>
 
