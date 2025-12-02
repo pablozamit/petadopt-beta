@@ -295,6 +295,7 @@ const AddEditPetForm = () => {
                 imageFiles={formData.imageFiles}
                 onImagesChange={handleImageUpload}
                 onPrimaryImageChange={(idx) => setFormData(prev => ({...prev, primaryImageIndex: idx}))}
+                primaryImageIndex={formData.primaryImageIndex}  // <-- ESTA LÍNEA ES LA CORRECCIÓN
                 error={errors.images}
               />
             </div>
