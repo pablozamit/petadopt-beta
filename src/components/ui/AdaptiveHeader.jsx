@@ -4,7 +4,8 @@ import Icon from '../AppIcon';
 import { useAuth } from '../../hooks/useAuth';
 
 const AdaptiveHeader = () => {
-  const { user, logout } = useAuth();
+  // AHORA: Importamos también userData para saber el rol
+  const { user, userData, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
   const location = useLocation();
@@ -27,6 +28,22 @@ const AdaptiveHeader = () => {
     setIsMobileMenuOpen(false);
   };
 
+  // Lógica para saber a dónde mandar al usuario según su rol
+  const getDashboardPath = () => {
+    if (!userData) return '/adopter-panel'; // Fallback por defecto
+    
+    switch (userData.role) {
+      case 'shelter':
+        return '/shelter-dashboard';
+      case 'professional':
+        return '/professional-panel';
+      case 'admin':
+        return '/admin-panel';
+      default:
+        return '/adopter-panel';
+    }
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border-light shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,7 +63,7 @@ const AdaptiveHeader = () => {
             </button>
           </div>
 
-          {/* Desktop Navigation - Enlaces visibles para TODOS */}
+          {/* Desktop Navigation - Siempre visible */}
           <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/"
@@ -86,9 +103,9 @@ const AdaptiveHeader = () => {
               <span>Profesionales</span>
             </Link>
 
-            {/* Auth Buttons - Solo esto cambia según el estado */}
+            {/* Auth Area */}
             {!user ? (
-              /* LOGIN/REGISTRO Dropdown */
+              /* NO LOGUEADO: Botón Acceder */
               <div className="relative">
                 <button
                   onClick={() => setShowLoginDropdown(!showLoginDropdown)}
@@ -139,14 +156,22 @@ const AdaptiveHeader = () => {
                 )}
               </div>
             ) : (
-              /* LOGGED IN Actions */
-              <div className="flex items-center space-x-4">
+              /* LOGUEADO: Mi Panel + Cerrar Sesión */
+              <div className="flex items-center space-x-3">
+                <Link
+                  to={getDashboardPath()}
+                  className="btn-primary flex items-center space-x-2 px-4 py-2 rounded-lg shadow-sm"
+                >
+                  <Icon name="LayoutDashboard" size={18} />
+                  <span>Mi Panel</span>
+                </Link>
+                
                 <button
                   onClick={handleLogout}
-                  className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-error-light hover:text-error transition-all duration-200 border border-transparent hover:border-error-light"
+                  className="p-2 text-text-secondary hover:text-error hover:bg-error-light rounded-lg transition-colors"
+                  title="Cerrar Sesión"
                 >
-                  <Icon name="LogOut" size={18} />
-                  <span>Cerrar Sesión</span>
+                  <Icon name="LogOut" size={20} />
                 </button>
               </div>
             )}
@@ -167,7 +192,6 @@ const AdaptiveHeader = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-border-light bg-background">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {/* Enlaces comunes para Móvil */}
               <Link
                 to="/"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -206,7 +230,6 @@ const AdaptiveHeader = () => {
 
               <div className="border-t border-border-light my-2"></div>
 
-              {/* Lógica condicional Auth para Móvil */}
               {!user ? (
                 <>
                   <button
@@ -235,6 +258,15 @@ const AdaptiveHeader = () => {
                 </>
               ) : (
                 <div className="space-y-2">
+                  <Link
+                    to={getDashboardPath()}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg bg-primary-50 text-primary hover:bg-primary-100"
+                  >
+                    <Icon name="LayoutDashboard" size={20} />
+                    <span className="font-medium">Mi Panel</span>
+                  </Link>
+                  
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-error hover:bg-error-light"
