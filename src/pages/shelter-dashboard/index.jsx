@@ -74,7 +74,7 @@ const ShelterDashboard = () => {
     <div className="min-h-screen bg-background">
       <AdaptiveHeader />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 space-y-12">
         {/* Stats */}
         <section>
           <h2 className="text-xl font-heading font-bold text-text-primary mb-6">
