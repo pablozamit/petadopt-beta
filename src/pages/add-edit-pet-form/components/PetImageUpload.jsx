@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 
-// CORRECCIÓN: Añadimos 'primaryImageIndex' a las props recibidas
+// AQUI ESTABA EL ERROR: Faltaba recibir 'primaryImageIndex' en las props
 const PetImageUpload = ({ images, imageFiles, onImagesChange, onPrimaryImageChange, primaryImageIndex, error }) => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
@@ -42,11 +42,8 @@ const PetImageUpload = ({ images, imageFiles, onImagesChange, onPrimaryImageChan
     });
 
     if (validFiles.length > 0) {
-      // 1. Crear URLs de previsualización
       const newPreviews = validFiles.map(file => URL.createObjectURL(file));
       const updatedImages = [...images, ...newPreviews];
-      
-      // 2. Guardar los archivos reales
       const updatedFiles = [...(imageFiles || []), ...validFiles];
 
       if (updatedImages.length <= 6) {
@@ -61,8 +58,7 @@ const PetImageUpload = ({ images, imageFiles, onImagesChange, onPrimaryImageChan
     const newImages = images.filter((_, i) => i !== index);
     onImagesChange(newImages, null, index);
     
-    // Ajustar el índice principal si borramos una imagen
-    // Usamos 'primaryImageIndex' de las props, que ahora sí existe
+    // Ajustar índice principal
     if (primaryImageIndex >= newImages.length) {
       onPrimaryImageChange(Math.max(0, newImages.length - 1));
     } else if (primaryImageIndex === index) {
@@ -76,32 +72,19 @@ const PetImageUpload = ({ images, imageFiles, onImagesChange, onPrimaryImageChan
     <div className="space-y-6">
       <div
         className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 ${
-          dragActive
-            ? 'border-primary bg-primary-50'
-            : error
-            ? 'border-error bg-error-light' :'border-border hover:border-primary-300 hover:bg-surface'
+          dragActive ? 'border-primary bg-primary-50' : error ? 'border-error bg-error-light' : 'border-border hover:border-primary-300 hover:bg-surface'
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleChange}
-          className="hidden"
-        />
+        <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleChange} className="hidden" />
         
         <div className="space-y-4">
-          <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
-            dragActive ? 'bg-primary text-white' : 'bg-surface text-primary'
-          }`}>
+          <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${dragActive ? 'bg-primary text-white' : 'bg-surface text-primary'}`}>
             <Icon name="Upload" size={24} />
           </div>
-          
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-2">Subir fotografías</h3>
             <p className="text-text-secondary mb-4">Arrastra las imágenes aquí o haz clic para seleccionar</p>
@@ -110,7 +93,6 @@ const PetImageUpload = ({ images, imageFiles, onImagesChange, onPrimaryImageChan
               Seleccionar imágenes
             </button>
           </div>
-          
           <div className="text-sm text-text-muted">
             <p>• Máximo 6 imágenes</p>
             <p>• Formatos: JPG, PNG, WebP</p>
