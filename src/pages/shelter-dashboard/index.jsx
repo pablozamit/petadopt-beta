@@ -1,182 +1,186 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, onSnapshot, limit, orderBy } from 'firebase/firestore';
-import Icon from 'components/AppIcon';
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot, 
+  deleteDoc, 
+  doc, 
+  orderBy 
+} from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { useAuth } from 'hooks/useAuth';
+
 import AdaptiveHeader from 'components/ui/AdaptiveHeader';
-import { db } from '@/firebaseConfig';
-import { useAuth } from '../../hooks/useAuth';
+import DashboardStats from './components/DashboardStats';
+import PetManagementGrid from './components/PetManagementGrid';
+import RecentActivity from './components/RecentActivity';
+import LoadingSpinner from 'components/ui/LoadingSpinner';
+import Icon from 'components/AppIcon';
 
 const ShelterDashboard = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ petsPublished: 0, adoptionRequests: 0, activePets: 0 });
-  const [recentPets, setRecentPets] = useState([]);
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
+  
+  const [pets, setPets] = useState([]);
+  const [loadingPets, setLoadingPets] = useState(true);
+  const [stats, setStats] = useState({
+    totalPets: 0,
+    adoptedPets: 0,
+    activeListings: 0,
+    pendingInquiries: 0 // Esto lo conectaremos más adelante cuando hagamos el sistema de mensajes
+  });
 
+  // 1. Cargar mascotas en tiempo real
   useEffect(() => {
-    // Si todavía está cargando el usuario, esperamos
-    if (user === undefined) return;
-
+    if (authLoading) return;
     if (!user) {
-      navigate('/login');
+      navigate('/authentication-login-register');
       return;
     }
 
-    // Stats simulados (se conectarán a queries reales en fases posteriores)
-    setStats({
-      petsPublished: 24,
-      adoptionRequests: 8,
-      activePets: 15
-    });
-
-    // Cargar mascotas reales del usuario actual
+    // Consulta: Dame las mascotas donde shelterId == MI_ID, ordenadas por fecha de creación
+    // Nota: Si te da error de índice en la consola, quita el 'orderBy' temporalmente
     const q = query(
-      collection(db, 'pets'),
-      where('shelterId', '==', user.uid),
-      orderBy('createdAt', 'desc'),
-      limit(5)
+      collection(db, "pets"), 
+      where("shelterId", "==", user.uid)
+      // orderBy("createdAt", "desc") 
     );
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const petsList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setRecentPets(petsList);
-      setLoading(false);
+      const petsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      setPets(petsData);
+      
+      // 2. Calcular estadísticas al vuelo
+      const total = petsData.length;
+      const active = petsData.filter(p => p.status === 'active').length;
+      const adopted = petsData.filter(p => p.status === 'adopted').length;
+      
+      setStats(prev => ({
+        ...prev,
+        totalPets: total,
+        activeListings: active,
+        adoptedPets: adopted
+      }));
+
+      setLoadingPets(false);
     }, (error) => {
       console.error("Error cargando mascotas:", error);
-      setLoading(false);
+      setLoadingPets(false);
     });
 
-    // Solicitudes (simuladas por ahora)
-    setRequests([
-      { id: '1', petName: 'Luna', adopterName: 'Ana G.', date: 'hace 2 días', status: 'pendiente' },
-      { id: '2', petName: 'Max', adopterName: 'Carlos L.', date: 'hace 4 días', status: 'contactado' }
-    ]);
-
     return () => unsubscribe();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
-  if (loading) {
+  // 3. Funciones de Acción
+  const handleAddNewPet = () => {
+    navigate('/add-edit-pet-form');
+  };
+
+  const handleEditPet = (petId) => {
+    navigate(`/add-edit-pet-form?edit=true&id=${petId}`);
+  };
+
+  const handleDeletePet = async (petId) => {
+    if (window.confirm("¿Estás seguro de que quieres eliminar esta mascota? Esta acción no se puede deshacer.")) {
+      try {
+        await deleteDoc(doc(db, "pets", petId));
+        // No hace falta actualizar el estado manual, onSnapshot lo hará por nosotros
+      } catch (error) {
+        console.error("Error eliminando mascota:", error);
+        alert("Error al eliminar la mascota");
+      }
+    }
+  };
+
+  const handleViewDetails = (petId) => {
+    navigate(`/pet-detail/${petId}`);
+  };
+
+  if (authLoading || loadingPets) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-6" />
-          <p className="text-text-secondary">Cargando tu protectora...</p>
-        </div>
+      <div className="flex items-center justify-center h-screen bg-background">
+        <LoadingSpinner />
       </div>
     );
   }
 
-  // Protección extra por si user es null al renderizar
-  if (!user) return null;
-
   return (
     <div className="min-h-screen bg-background">
       <AdaptiveHeader />
+      
+      <main className="pt-20 px-4 sm:px-6 lg:px-8 pb-12 max-w-7xl mx-auto space-y-8">
+        {/* Welcome Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-heading font-bold text-text-primary">
+              Panel de Control
+            </h1>
+            <p className="text-text-secondary mt-1">
+              Bienvenido, {user.displayName || 'Refugio'}. Aquí tienes el resumen de tu actividad.
+            </p>
+          </div>
+          <button
+            onClick={handleAddNewPet}
+            className="btn-primary flex items-center justify-center space-x-2 shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all duration-300"
+          >
+            <Icon name="Plus" size={20} />
+            <span>Añadir Nueva Mascota</span>
+          </button>
+        </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 space-y-12">
-        {/* Stats */}
-        <section>
-          <h2 className="text-xl font-heading font-bold text-text-primary mb-6">
-            Resumen de actividad
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-surface rounded-2xl p-6 border border-border-light shadow-sm">
-              <div className="text-3xl font-bold text-primary mb-1">
-                {stats.petsPublished}
+        {/* Stats Grid */}
+        <DashboardStats stats={stats} />
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Pet Management List - Takes up 2 columns */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-surface rounded-xl shadow-sm border border-border-light overflow-hidden">
+              <div className="p-6 border-b border-border-light flex items-center justify-between">
+                <h2 className="text-xl font-heading font-bold text-text-primary flex items-center gap-2">
+                  <Icon name="Dog" className="text-primary" />
+                  Gestionar Mascotas
+                </h2>
+                <span className="text-sm text-text-secondary bg-background-light px-3 py-1 rounded-full border border-border">
+                  {pets.length} Total
+                </span>
               </div>
-              <p className="text-xs text-text-secondary uppercase font-semibold tracking-wide">Publicados</p>
-            </div>
-            <div className="bg-surface rounded-2xl p-6 border border-border-light shadow-sm">
-              <div className="text-3xl font-bold text-secondary mb-1">
-                {stats.activePets}
+              
+              <div className="p-0">
+                <PetManagementGrid 
+                  pets={pets}
+                  onEdit={handleEditPet}
+                  onDelete={handleDeletePet}
+                  onView={handleViewDetails}
+                />
               </div>
-              <p className="text-xs text-text-secondary uppercase font-semibold tracking-wide">Activos</p>
-            </div>
-            <div className="bg-surface rounded-2xl p-6 border border-border-light shadow-sm">
-              <div className="text-3xl font-bold text-accent mb-1">
-                {stats.adoptionRequests}
-              </div>
-              <p className="text-xs text-text-secondary uppercase font-semibold tracking-wide">Solicitudes</p>
-            </div>
-             <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 flex flex-col justify-center items-center text-center cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => navigate('/add-edit-pet-form')}>
-              <Icon name="Plus" size={24} className="text-primary mb-2" />
-              <p className="text-sm text-primary font-bold">Publicar Rápido</p>
             </div>
           </div>
-        </section>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Últimas mascotas */}
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-text-primary">
-                Inventario reciente
+          {/* Recent Activity Sidebar */}
+          <div className="space-y-6">
+             {/* Pasamos activity vacía por ahora hasta que tengamos la colección de 'activities' */}
+            <RecentActivity activity={[]} />
+            
+            {/* Quick Tips Card */}
+            <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-xl p-6 border border-primary-100">
+              <h3 className="font-heading font-bold text-primary-900 mb-2 flex items-center gap-2">
+                <Icon name="Lightbulb" size={20} />
+                Consejo Pro
               </h3>
+              <p className="text-primary-800 text-sm">
+                Las mascotas con más de 3 fotos y una descripción detallada tienen un 40% más de probabilidades de ser adoptadas rápidamente.
+              </p>
             </div>
-            <div className="space-y-3">
-              {recentPets.length > 0 ? recentPets.map((pet) => (
-                <div key={pet.id} className="flex items-center gap-4 p-3 bg-surface rounded-xl border border-border-light hover:border-primary/30 transition-all cursor-pointer" onClick={() => navigate(`/pet/${pet.id}`)}>
-                  <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
-                     {pet.images && pet.images[0] ? (
-                        <img src={pet.images[0]} alt={pet.name} className="w-full h-full object-cover" />
-                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <Icon name="Image" size={20} />
-                        </div>
-                     )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-text-primary truncate">{pet.name}</h4>
-                    <p className="text-xs text-text-secondary">{pet.breed || 'Mestizo'} • {pet.age}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                     <span className={`w-2 h-2 rounded-full ${pet.status === 'active' ? 'bg-green-500' : 'bg-gray-300'}`} />
-                     <Icon name="ChevronRight" size={16} className="text-gray-300" />
-                  </div>
-                </div>
-              )) : (
-                  <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                      <p className="text-text-muted text-sm mb-2">No tienes mascotas activas</p>
-                      <button onClick={() => navigate('/add-edit-pet-form')} className="text-primary text-sm font-bold hover:underline">
-                          Crear la primera
-                      </button>
-                  </div>
-              )}
-            </div>
-          </section>
-
-          {/* Solicitudes */}
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-text-primary">
-                Mensajes recientes
-              </h3>
-            </div>
-            <div className="space-y-3">
-              {requests.map((req) => (
-                <div key={req.id} className="p-4 bg-surface rounded-xl border border-border-light">
-                  <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold text-text-primary text-sm">{req.adopterName}</span>
-                      <span className="text-xs text-text-muted">{req.date}</span>
-                  </div>
-                  <p className="text-sm text-text-secondary mb-3">
-                      Hola, me gustaría saber si {req.petName} es compatible con gatos...
-                  </p>
-                  <div className="flex gap-2">
-                    <button className="flex-1 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg hover:bg-primary/20">
-                        Responder
-                    </button>
-                    <button className="px-3 py-1.5 border border-border text-text-secondary text-xs font-bold rounded-lg hover:bg-gray-50">
-                        Ver ficha
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
