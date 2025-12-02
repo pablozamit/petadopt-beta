@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, onSnapshot, limit, orderBy } from 'firebase/firestore';
 import Icon from 'components/AppIcon';
-// Aseguramos que las importaciones apunten a los archivos que SÍ existen
+import AdaptiveHeader from 'components/ui/AdaptiveHeader';
 import { db } from '@/firebaseConfig';
-import { useAuth } from '../../hooks/useAuth'; // <--- CORREGIDO: Apunta a hooks, no a contexts
+import { useAuth } from '../../hooks/useAuth';
+
 
 const ShelterDashboard = () => {
   const { user } = useAuth();
