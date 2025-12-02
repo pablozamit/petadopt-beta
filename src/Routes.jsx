@@ -19,6 +19,7 @@ import ComparisonPage from "pages/comparison";
 import PoliticaCookies from "pages/politica-cookies";
 import PoliticaPrivacidad from "pages/politica-privacidad";
 import TerminosCondiciones from "pages/terminos-condiciones";
+import ComoFunciona from "pages/como-funciona";
 import NotFound from "pages/NotFound";
 
 const Routes = () => {
@@ -51,6 +52,9 @@ const Routes = () => {
           <Route path="/politica-cookies" element={<PoliticaCookies />} />
           <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
           <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
+          
+          {/* Página Cómo Funciona */}
+          <Route path="/como-funciona" element={<ComoFunciona />} />
           
           {/* Catch-all route for 404 */}
           <Route path="*" element={<NotFound />} />
