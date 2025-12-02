@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { doc, getDoc, addDoc, updateDoc, collection } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../../firebaseConfig';
+import { db, storage } from '../../firebaseConfig'; // Asegúrate que la ruta es correcta
 import { useAuth } from 'hooks/useAuth';
 
 import AdaptiveHeader from 'components/ui/AdaptiveHeader';
 import BreadcrumbNavigation from 'components/ui/BreadcrumbNavigation';
 import Icon from 'components/AppIcon';
+import LoadingSpinner from 'components/ui/LoadingSpinner'; // Importamos el spinner real
 import PetImageUpload from './components/PetImageUpload';
 import PetFormFields from './components/PetFormFields';
 import PetTagsSection from './components/PetTagsSection';
@@ -29,16 +30,16 @@ const AddEditPetForm = () => {
     province: '',
     description: '',
     images: [],
-    imageFiles: [],
+    imageFiles: [], // Archivos nuevos a subir
     primaryImageIndex: 0,
-    // NUEVO - Convivencia
+    // Convivencia
     compatibility: {
-      dogs: null,
-      cats: null,
-      children: null,
-      otherPets: null
+      dogs: false, // Inicializamos en false o null según prefieras
+      cats: false,
+      children: false,
+      otherPets: false
     },
-    // NUEVO - Necesidades especiales
+    // Necesidades especiales
     specialNeeds: {
       hasSpecialNeeds: false,
       medication: false,
@@ -59,9 +60,11 @@ const AddEditPetForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  // Cargar datos si es edición
+  // 1. Cargar datos si es edición
   useEffect(() => {
     if (authLoading) return;
+    
+    // Si no hay usuario, mandamos al login
     if (!user) {
       navigate('/authentication-login-register');
       return;
@@ -76,37 +79,30 @@ const AddEditPetForm = () => {
           
           if (docSnap.exists()) {
             const data = docSnap.data();
-            // Verificamos que la mascota pertenezca a este usuario
+            
+            // SEGURIDAD: Verificamos que la mascota pertenezca a este usuario
             if (data.shelterId !== user.uid) {
               alert("No tienes permiso para editar esta mascota");
               navigate('/shelter-dashboard');
               return;
             }
-            setFormData({
+
+            setFormData(prev => ({
+              ...prev,
               ...data,
-              imageFiles: [],
-              // Asegurar que los nuevos campos existan
-              compatibility: data.compatibility || {
-                dogs: null,
-                cats: null,
-                children: null,
-                otherPets: null
-              },
-              specialNeeds: data.specialNeeds || {
-                hasSpecialNeeds: false,
-                medication: false,
-                specialDiet: false,
-                physicalDisability: false,
-                behavioralNeeds: false,
-                details: ''
-              }
-            });
+              imageFiles: [], // Reiniciamos archivos nuevos al cargar
+              // Fusionamos objetos para asegurar que no falten campos nuevos
+              compatibility: { ...prev.compatibility, ...data.compatibility },
+              specialNeeds: { ...prev.specialNeeds, ...data.specialNeeds },
+              tags: { ...prev.tags, ...data.tags }
+            }));
           } else {
             alert("Mascota no encontrada");
             navigate('/shelter-dashboard');
           }
         } catch (error) {
           console.error("Error cargando mascota:", error);
+          alert("Error al cargar los datos de la mascota.");
         } finally {
           setIsLoading(false);
         }
@@ -116,6 +112,7 @@ const AddEditPetForm = () => {
     fetchPetData();
   }, [isEdit, petId, user, authLoading, navigate]);
 
+  // 2. Validación
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'El nombre es obligatorio';
@@ -125,7 +122,10 @@ const AddEditPetForm = () => {
     if (!formData.province) newErrors.province = 'La provincia es obligatoria';
     if (!formData.description.trim()) newErrors.description = 'La descripción es obligatoria';
     
-    if (formData.images.length === 0) newErrors.images = 'Debe subir al menos una imagen';
+    if (formData.images.length === 0 && formData.imageFiles.length === 0) {
+       // Si no hay imágenes en pantalla ni archivos nuevos
+       newErrors.images = 'Debe subir al menos una imagen';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -142,78 +142,92 @@ const AddEditPetForm = () => {
 
   const handleImageUpload = (newImages, newFiles, indexToRemove) => {
     if (indexToRemove !== undefined) {
+      // Eliminar imagen
       setFormData(prev => {
         const updatedImages = prev.images.filter((_, i) => i !== indexToRemove);
+        // Nota: Eliminar del array imageFiles es complejo sin un ID mapping, 
+        // pero para este MVP asumimos que se suben todos los files pendientes.
         return { ...prev, images: updatedImages };
       });
     } else {
+      // Añadir imagen
       setFormData(prev => ({
         ...prev,
-        images: newImages,
+        images: newImages, // Actualiza las previsualizaciones
         imageFiles: newFiles ? [...prev.imageFiles, ...newFiles] : prev.imageFiles
       }));
     }
     if (errors.images) setErrors(prev => ({ ...prev, images: '' }));
   };
 
+  // 3. Subida de Imágenes a Storage
   const uploadImagesToFirebase = async () => {
     const uploadedUrls = [];
     
+    // a) Conservar imágenes que ya son URLs remotas (empiezan por http/https)
+    // y filtrar las que son blobs locales (previsualizaciones)
     for (const imgUrl of formData.images) {
-      if (imgUrl.startsWith('http')) {
+      if (typeof imgUrl === 'string' && imgUrl.startsWith('http')) {
         uploadedUrls.push(imgUrl);
       }
     }
 
-    const newUrls = [];
+    // b) Subir los nuevos archivos
     if (formData.imageFiles && formData.imageFiles.length > 0) {
         for (const file of formData.imageFiles) {
+            // Ruta: pets / UID_USUARIO / TIMESTAMP_NOMBRE
             const storageRef = ref(storage, `pets/${user.uid}/${Date.now()}_${file.name}`);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
-            newUrls.push(url);
+            uploadedUrls.push(url);
         }
     }
 
-    const finalImages = formData.images.filter(img => img.startsWith('http')).concat(newUrls);
-    return finalImages;
+    return uploadedUrls;
   };
 
+  // 4. Guardado final (Publish)
   const handlePublish = async () => {
     if (!validateForm()) return;
     setIsLoading(true);
 
     try {
+      // a) Subir fotos primero
       const finalImageUrls = await uploadImagesToFirebase();
 
+      // b) Preparar objeto para Firestore
       const petData = {
         name: formData.name,
         age: formData.age,
-        ageCategory: formData.age,
+        ageCategory: formData.age, // Mantenemos redundancia si tu esquema lo usaba
         species: formData.species,
         size: formData.size,
         province: formData.province,
         description: formData.description,
         images: finalImageUrls,
-        primaryImageIndex: 0,
+        primaryImageIndex: 0, // Por simplicidad, siempre la primera
         compatibility: formData.compatibility,
         specialNeeds: formData.specialNeeds,
         tags: formData.tags,
         shelterId: user.uid,
-        shelterName: user.displayName || 'Refugio',
+        shelterName: user.displayName || 'Refugio', // Fallback si no hay nombre
         status: 'active',
         updatedAt: new Date().toISOString()
       };
 
       if (!isEdit) {
+        // CREAR
         petData.createdAt = new Date().toISOString();
+        // Inicializar contadores o campos extra si fuera necesario
         await addDoc(collection(db, "pets"), petData);
       } else {
+        // ACTUALIZAR
         await updateDoc(doc(db, "pets", petId), petData);
       }
       
       setShowSuccessMessage(true);
-      setTimeout(() => navigate('/shelter-dashboard'), 1000);
+      // Redirigir tras 1.5 segundos
+      setTimeout(() => navigate('/shelter-dashboard'), 1500);
       
     } catch (error) {
       console.error('Error publicando mascota:', error);
@@ -232,7 +246,14 @@ const AddEditPetForm = () => {
     return Math.round(((filledFields.length + (hasImages ? 1 : 0)) / (requiredFields.length + 1)) * 100);
   };
 
-  if (authLoading) return <div className="p-10 text-center">Cargando...</div>;
+  // Renderizado condicional de carga de auth
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -251,7 +272,7 @@ const AddEditPetForm = () => {
           </div>
 
           {showSuccessMessage && (
-            <div className="mb-6 p-4 bg-success-light border border-success rounded-lg flex items-center space-x-3">
+            <div className="mb-6 p-4 bg-success-light border border-success rounded-lg flex items-center space-x-3 animate-fade-in">
               <Icon name="CheckCircle" size={20} className="text-success" />
               <span className="text-success font-medium">¡Mascota guardada correctamente!</span>
             </div>
