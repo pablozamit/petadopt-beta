@@ -1,0 +1,46 @@
+{
+  "short_name": "AdoptaEspaña",
+  "name": "AdoptaEspaña - Adopción de Mascotas",
+  "description": "Plataforma de adopción de mascotas en España",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "android-chrome-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "android-chrome-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4A90A4",
+  "background_color": "#FDFCFA",
+  "orientation": "portrait-primary",
+  "categories": ["lifestyle", "social"],
+  "lang": "es",
+  "scope": "/",
+  "shortcuts": [
+    {
+      "name": "Buscar Mascotas",
+      "short_name": "Buscar",
+      "description": "Buscar mascotas disponibles para adopción",
+      "url": "/?action=search",
+      "icons": [{ "src": "/favicon-32x32.png", "sizes": "32x32" }]
+    },
+    {
+      "name": "Para Refugios",
+      "short_name": "Refugios",
+      "description": "Acceso para refugios",
+      "url": "/authentication-login-register",
+      "icons": [{ "src": "/favicon-32x32.png", "sizes": "32x32" }]
+    }
+  ]
+}
