@@ -1,86 +1,46 @@
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <title>AdoptaEspaña - Adopción de Mascotas en España</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#4A90A4" />
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Encuentra tu compañero perfecto en AdoptaEspaña. Miles de mascotas esperan un hogar amoroso. Conectamos refugios con familias en toda España." />
-    <meta name="keywords" content="adopción mascotas, perros adopción, gatos adopción, refugios España, adoptar mascota, animales adopción" />
-    <meta name="author" content="AdoptaEspaña" />
-    <meta name="robots" content="index, follow" />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://adoptaespana.com/" />
-    <meta property="og:title" content="AdoptaEspaña - Adopción de Mascotas en España" />
-    <meta property="og:description" content="Encuentra tu compañero perfecto en AdoptaEspaña. Miles de mascotas esperan un hogar amoroso." />
-    <meta property="og:image" content="https://adoptaespana.com/assets/images/og-image.jpg" />
-    <meta property="og:locale" content="es_ES" />
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://adoptaespana.com/" />
-    <meta property="twitter:title" content="AdoptaEspaña - Adopción de Mascotas en España" />
-    <meta property="twitter:description" content="Encuentra tu compañero perfecto en AdoptaEspaña. Miles de mascotas esperan un hogar amoroso." />
-    <meta property="twitter:image" content="https://adoptaespana.com/assets/images/og-image.jpg" />
-    
-    <!-- Favicon -->
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://adoptaespana.com/" />
-    
-    <!-- Preconnect to external domains -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://images.unsplash.com" />
-    
-    <!-- Structured Data -->
-    <script type="application/ld+json">
+{
+  "short_name": "AdoptaEspaña",
+  "name": "AdoptaEspaña - Adopción de Mascotas",
+  "description": "Plataforma de adopción de mascotas en España",
+  "icons": [
     {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "AdoptaEspaña",
-      "description": "Plataforma de adopción de mascotas en España",
-      "url": "https://adoptaespana.com",
-      "logo": "https://adoptaespana.com/assets/images/logo.png",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+34-900-123-456",
-        "contactType": "customer service",
-        "availableLanguage": "Spanish"
-      },
-      "sameAs": [
-        "https://www.facebook.com/adoptaespana",
-        "https://www.instagram.com/adoptaespana",
-        "https://twitter.com/adoptaespana"
-      ]
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "android-chrome-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "android-chrome-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
-    </script>
-
-<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fpetadopt8187back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.5"></script>
-  <script type="module" crossorigin src="/assets/index-DJeWgve1.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/react-vendor-B_TuarTm.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-vendor-DrSCNiDe.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-3mSguDuv.css">
-</head>
-  <body>
-    <noscript>
-      <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-        <h1>JavaScript Requerido</h1>
-        <p>Esta aplicación requiere JavaScript para funcionar correctamente.</p>
-        <p>Por favor, habilita JavaScript en tu navegador y recarga la página.</p>
-      </div>
-    </noscript>
-    <div class="dhiwise-code" id="root"></div>
-  </body>
-</html>
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4A90A4",
+  "background_color": "#FDFCFA",
+  "orientation": "portrait-primary",
+  "categories": ["lifestyle", "social"],
+  "lang": "es",
+  "scope": "/",
+  "shortcuts": [
+    {
+      "name": "Buscar Mascotas",
+      "short_name": "Buscar",
+      "description": "Buscar mascotas disponibles para adopción",
+      "url": "/?action=search",
+      "icons": [{ "src": "/favicon-32x32.png", "sizes": "32x32" }]
+    },
+    {
+      "name": "Para Refugios",
+      "short_name": "Refugios",
+      "description": "Acceso para refugios",
+      "url": "/authentication-login-register",
+      "icons": [{ "src": "/favicon-32x32.png", "sizes": "32x32" }]
+    }
+  ]
+}

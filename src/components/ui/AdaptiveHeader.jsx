@@ -1,60 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import Icon from '../AppIcon';
+import { useAuth } from '../../hooks/useAuth';
 
 const AdaptiveHeader = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userType, setUserType] = useState(null);
-  const [userInfo, setUserInfo] = useState(null);
+  const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const shelterAuth = localStorage.getItem('isAuthenticated') === 'true';
-    const professionalAuth = localStorage.getItem('isProfessional') === 'true';
-    const adminAuth = localStorage.getItem('isAdmin') === 'true';
-    
-    const shelterInfo = JSON.parse(localStorage.getItem('shelterInfo') || 'null');
-    const professionalInfo = JSON.parse(localStorage.getItem('professionalInfo') || 'null');
-    const adminInfo = JSON.parse(localStorage.getItem('adminInfo') || 'null');
-    
-    if (adminAuth) {
-      setIsAuthenticated(true);
-      setUserType('admin');
-      setUserInfo(adminInfo);
-    } else if (professionalAuth) {
-      setIsAuthenticated(true);
-      setUserType('professional');
-      setUserInfo(professionalInfo);
-    } else if (shelterAuth) {
-      setIsAuthenticated(true);
-      setUserType('shelter');
-      setUserInfo(shelterInfo);
-    } else {
-      setIsAuthenticated(false);
-      setUserType(null);
-      setUserInfo(null);
-    }
-  }, [location]);
-
-  const handleLogout = () => {
-    if (userType === 'professional') {
-      localStorage.removeItem('isProfessional');
-      localStorage.removeItem('professionalInfo');
-    } else if (userType === 'admin') {
-      localStorage.removeItem('isAdmin');
-      localStorage.removeItem('adminInfo');
-    } else {
-      localStorage.removeItem('isAuthenticated');
-      localStorage.removeItem('shelterInfo');
-    }
-    setIsAuthenticated(false);
-    setUserType(null);
-    setUserInfo(null);
-    setIsMobileMenuOpen(false);
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
+    setIsMobileMenuOpen(false);
   };
 
   const handleNavigation = (path) => {
@@ -64,28 +23,8 @@ const AdaptiveHeader = () => {
   };
 
   const handleLogoClick = () => {
-    if (userType === 'admin') navigate('/admin-panel');
-    else if (userType === 'professional') navigate('/professional-panel');
-    else if (userType === 'shelter') navigate('/shelter-dashboard');
-    else navigate('/');
+    navigate('/');
     setIsMobileMenuOpen(false);
-  };
-
-  const getDisplayName = (name) => {
-    if (!name) return userType === 'admin' ? 'Admin' : userType === 'professional' ? 'Profesional' : 'Refugio';
-    return name.length > 20 ? name.substring(0, 17) + '...' : name;
-  };
-
-  const getUserColor = () => {
-    if (userType === 'admin') return 'bg-error';
-    if (userType === 'professional') return 'bg-secondary';
-    return 'bg-primary';
-  };
-
-  const getUserIcon = () => {
-    if (userType === 'admin') return 'Shield';
-    if (userType === 'professional') return 'Stethoscope';
-    return 'Building2';
   };
 
   return (
@@ -109,7 +48,7 @@ const AdaptiveHeader = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            {!isAuthenticated ? (
+            {!user ? (
               <>
                 {/* 3 DIRECTORIOS */}
                 <Link
@@ -203,30 +142,6 @@ const AdaptiveHeader = () => {
               </>
             ) : (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-3 px-3 py-2 bg-surface rounded-lg">
-                  <div className={`w-8 h-8 ${getUserColor()} rounded-full flex items-center justify-center`}>
-                    <Icon name={getUserIcon()} size={16} color="white" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-text-primary">
-                      {getDisplayName(userInfo?.name)}
-                    </span>
-                    <span className="text-xs text-text-secondary capitalize">{userType}</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    if (userType === 'admin') handleNavigation('/admin-panel');
-                    else if (userType === 'professional') handleNavigation('/professional-panel');
-                    else handleNavigation('/shelter-dashboard');
-                  }}
-                  className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-surface transition-all duration-200"
-                >
-                  <Icon name="LayoutDashboard" size={18} />
-                  <span>Panel</span>
-                </button>
-
                 <button
                   onClick={handleLogout}
                   className="nav-link flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-error-light hover:text-error transition-all duration-200"
@@ -253,7 +168,7 @@ const AdaptiveHeader = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-border-light bg-background">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {!isAuthenticated ? (
+              {!user ? (
                 <>
                   <Link
                     to="/"
@@ -319,28 +234,6 @@ const AdaptiveHeader = () => {
                 </>
               ) : (
                 <div className="space-y-2">
-                  <div className="flex items-center space-x-3 px-3 py-3 bg-surface rounded-lg">
-                    <div className={`w-10 h-10 ${getUserColor()} rounded-full flex items-center justify-center`}>
-                      <Icon name={getUserIcon()} size={18} color="white" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-text-primary">{getDisplayName(userInfo?.name)}</span>
-                      <span className="text-sm text-text-secondary capitalize">{userType}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      if (userType === 'admin') handleNavigation('/admin-panel');
-                      else if (userType === 'professional') handleNavigation('/professional-panel');
-                      else handleNavigation('/shelter-dashboard');
-                    }}
-                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:bg-surface"
-                  >
-                    <Icon name="LayoutDashboard" size={20} />
-                    <span className="font-medium">Panel</span>
-                  </button>
-
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:text-error hover:bg-error-light"
