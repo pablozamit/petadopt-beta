@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFilters, useSetFilters } from './FiltersContext';
 import Icon from 'components/AppIcon';
+import Tooltip from 'components/ui/Tooltip';
 
 const AdvancedFilterBar = ({ petsCount, noResults }) => {
   const filters = useFilters();
@@ -66,12 +67,20 @@ const AdvancedFilterBar = ({ petsCount, noResults }) => {
           <span>animales</span>
         </div>
       </div>
+      
+      {/* NUEVO: Texto contextual */}
+      <p className="text-sm text-text-secondary -mt-2">
+        Ajusta los filtros de edad y tamaño para encontrar animales que encajen mejor con tu hogar y tu ritmo de vida.
+      </p>
 
       {/* Filtro Edad */}
       <div>
-        <label className="block text-sm font-semibold text-text-primary mb-3">
-          Edad del animal
-        </label>
+        <div className="flex items-center mb-3">
+          <label className="text-sm font-semibold text-text-primary">
+            Edad del animal
+          </label>
+          <Tooltip content="¿Por qué importa la edad? La edad influye en la energía, los cuidados y el tiempo de adaptación. Un cachorro requiere más educación y tiempo; un senior suele ser más tranquilo y agradecido." />
+        </div>
         <div className="flex flex-wrap gap-2.5 mb-2">
           {ageOptions.map((option) => (
             <FilterChip
@@ -83,15 +92,18 @@ const AdvancedFilterBar = ({ petsCount, noResults }) => {
           ))}
         </div>
         <p className="text-xs text-text-secondary">
-          Puedes elegir varias etapas de vida. [cite_start]No es lo mismo educar a un cachorro que acompañar a un senior[cite: 884].
+          Puedes elegir varias etapas de vida. No es lo mismo educar a un cachorro que acompañar a un senior, elige lo que mejor encaja contigo.
         </p>
       </div>
 
       {/* Filtro Tamaño */}
       <div>
-        <label className="block text-sm font-semibold text-text-primary mb-3">
-          Tamaño del animal
-        </label>
+        <div className="flex items-center mb-3">
+          <label className="text-sm font-semibold text-text-primary">
+            Tamaño del animal
+          </label>
+          <Tooltip content="¿No sabes qué tamaño elegir? Si dudas, marca más de una opción (por ejemplo, Mediano + Grande). Más tarde podrás decidir con calma tras hablar con la protectora." />
+        </div>
         <div className="flex flex-wrap gap-2.5 mb-2">
           {sizeOptions.map((option) => (
             <FilterChip
@@ -104,7 +116,7 @@ const AdvancedFilterBar = ({ petsCount, noResults }) => {
           ))}
         </div>
         <p className="text-xs text-text-secondary">
-          [cite_start]Piensa en tu espacio, tu fuerza física y tu estilo de vida[cite: 904].
+          Piensa en tu espacio, tu fuerza física y tu estilo de vida. Un perro más grande suele necesitar más espacio y fuerza para manejarlo en paseo.
         </p>
       </div>
 
