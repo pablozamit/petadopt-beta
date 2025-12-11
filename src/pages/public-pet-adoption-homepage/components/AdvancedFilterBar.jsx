@@ -150,7 +150,7 @@ const AdvancedFilterBar = ({ petsCount, noResults }) => {
             No hemos encontrado compañeros con estos filtros
           </h4>
           <p className="text-text-secondary mb-4 text-sm">
-            Intenta ampliar los criterios: desmarcar "Senior" o "Muy grande" puede ayudarte a encontrar más opciones. O mira todos los animales disponibles.
+            Intenta ampliar tus criterios de búsqueda. Prueba a quitar o cambiar algunos filtros para ver más opciones disponibles.
           </p>
           <button
             onClick={clearFilters}
