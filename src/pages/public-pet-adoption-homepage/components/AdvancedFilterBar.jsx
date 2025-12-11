@@ -23,12 +23,21 @@ const AdvancedFilterBar = ({ petsCount, noResults }) => {
     { value: 'senior', label: 'Senior', sub: '+7 años' }
   ];
 
+  // 🆕 NUEVO: Función para manejar cambios de filtro SIN scroll
   const toggleFilter = (category, value) => {
+    const scrollPos = window.scrollY;
+    
     const current = filters[category] || [];
     const newFilters = current.includes(value)
       ? current.filter((f) => f !== value)
       : [...current, value];
+    
     update({ [category]: newFilters });
+    
+    // Restaurar scroll después del cambio
+    setTimeout(() => {
+      window.scrollTo(0, scrollPos);
+    }, 0);
   };
 
   const clearFilters = () => {
