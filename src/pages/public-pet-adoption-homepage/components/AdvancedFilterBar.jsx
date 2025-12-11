@@ -1,11 +1,11 @@
 import React from 'react';
-import { useFilters, useSetFilters } from './FiltersContext';
+import { useFilters, useUpdateFilters } from './FiltersContext';
 import Icon from 'components/AppIcon';
 import Tooltip from 'components/ui/Tooltip';
 
 const AdvancedFilterBar = ({ petsCount, noResults }) => {
   const filters = useFilters();
-  const setFilters = useSetFilters();
+  const { update, reset } = useUpdateFilters();
 
   // Opciones estandarizadas según PDF (Página 11)
   const sizeOptions = [
@@ -28,11 +28,11 @@ const AdvancedFilterBar = ({ petsCount, noResults }) => {
     const newFilters = current.includes(value)
       ? current.filter((f) => f !== value)
       : [...current, value];
-    setFilters({ [category]: newFilters });
+    update({ [category]: newFilters });
   };
 
   const clearFilters = () => {
-    setFilters({});
+    reset();
   };
 
   const FilterChip = ({ label, sub, value, category, active, tooltip }) => (
