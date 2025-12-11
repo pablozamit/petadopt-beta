@@ -147,10 +147,10 @@ const AdvancedFilterBar = ({ petsCount, noResults }) => {
       {noResults && (
         <div className="bg-warning-50 border border-warning-200 rounded-xl p-5">
           <h4 className="text-lg font-heading font-semibold text-warning mb-2">
-            No hemos encontrado ningún compañero con estos filtros
+            No hemos encontrado compañeros con estos filtros
           </h4>
           <p className="text-text-secondary mb-4 text-sm">
-            [cite_start]Prueba a ampliar la edad o el tamaño (por ejemplo, desmarcando "Senior" o "Muy grande")[cite: 920].
+            Intenta ampliar los criterios: desmarcar "Senior" o "Muy grande" puede ayudarte a encontrar más opciones. O mira todos los animales disponibles.
           </p>
           <button
             onClick={clearFilters}
