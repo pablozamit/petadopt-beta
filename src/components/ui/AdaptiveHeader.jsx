@@ -174,14 +174,16 @@ const AdaptiveHeader = () => {
                 </Link>
 
                 {/* 🆕 NUEVO: Icono de Mensajes con badge */}
-                <Link
-                  to="/messages"
-                  className="relative p-2 text-text-secondary hover:text-primary hover:bg-surface rounded-lg transition-colors"
-                  title="Mensajes"
-                >
-                  <Icon name="MessageSquare" size={20} />
+                <div className="relative">
+                  <Link
+                    to="/messages"
+                    className="relative p-2 text-text-secondary hover:text-primary hover:bg-surface rounded-lg transition-colors inline-flex items-center"
+                    title="Mensajes"
+                  >
+                    <Icon name="MessageSquare" size={20} />
+                  </Link>
                   <UnreadBadge count={totalUnread} />
-                </Link>
+                </div>
                 
                 <button
                   onClick={handleLogout}
@@ -292,7 +294,9 @@ const AdaptiveHeader = () => {
                   >
                     <Icon name="MessageSquare" size={20} />
                     <span className="font-medium">Mensajes</span>
-                    <UnreadBadge count={totalUnread} />
+                    <div className="absolute right-4">
+                      <UnreadBadge count={totalUnread} />
+                    </div>
                   </Link>
                   
                   <button
