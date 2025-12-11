@@ -2,7 +2,14 @@ import React, { createContext, useContext, useState } from 'react';
 
 // Creación de contextos
 const FiltersContext = createContext();
-const SetFiltersContext = createContext();
+const UpdateFiltersContext = createContext();
+
+const initialState = {
+  age: [],
+  size: [],
+  species: '',
+  province: ''
+};
 
 // Hooks personalizados para usar el contexto
 export const useFilters = () => {
@@ -13,36 +20,36 @@ export const useFilters = () => {
   return context;
 };
 
-export const useSetFilters = () => {
-  const context = useContext(SetFiltersContext);
+export const useUpdateFilters = () => {
+  const context = useContext(UpdateFiltersContext);
   if (context === undefined) {
-    throw new Error('useSetFilters debe ser usado dentro de un FiltersProvider');
+    throw new Error('useUpdateFilters debe ser usado dentro de un FiltersProvider');
   }
   return context;
 };
 
 // Proveedor del contexto
 export const FiltersProvider = ({ children }) => {
-  const [filters, setFilters] = useState({
-    age: [],
-    size: [],
-    species: '',
-    province: ''
-  });
+  const [filters, setFilters] = useState(initialState);
 
-  // Función para actualizar filtros (merge con el estado anterior)
-  const updateFilters = (newFilters) => {
-    setFilters(prev => ({
-      ...prev,
-      ...newFilters
-    }));
+  // Objeto con funciones de actualización
+  const filterUpdaters = {
+    update: (newFilters) => {
+      setFilters(prev => ({
+        ...prev,
+        ...newFilters
+      }));
+    },
+    reset: () => {
+      setFilters(initialState);
+    }
   };
 
   return (
     <FiltersContext.Provider value={filters}>
-      <SetFiltersContext.Provider value={updateFilters}>
+      <UpdateFiltersContext.Provider value={filterUpdaters}>
         {children}
-      </SetFiltersContext.Provider>
+      </UpdateFiltersContext.Provider>
     </FiltersContext.Provider>
   );
 };
