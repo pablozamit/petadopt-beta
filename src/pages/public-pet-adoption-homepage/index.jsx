@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import Icon from 'components/AppIcon';
@@ -11,11 +11,14 @@ import HeroSection from './components/HeroSection';
 
 const PublicPetAdoptionContent = () => {
   const [pets, setPets] = useState([]);
+  const [allPets, setAllPets] = useState([]); // 🆕: Guardar TODOS los pets sin filtrar
   const [loading, setLoading] = useState(true);
   const [noResults, setNoResults] = useState(false);
   const filters = useFilters();
   const navigate = useNavigate();
+  const hasInitialized = useRef(false); // 🆕: Evitar re-renders innecesarios
 
+  // 🆕 CARGAR PETS UNA SOLA VEZ AL MONTAR
   useEffect(() => {
     const fetchPets = async () => {
       try {
@@ -28,31 +31,42 @@ const PublicPetAdoptionContent = () => {
         );
 
         const snapshot = await getDocs(q);
-        let allPets = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-
-        if (filters.age && filters.age.length > 0) {
-          allPets = allPets.filter((pet) => filters.age.includes(pet.age));
-        }
-        
-        if (filters.size && filters.size.length > 0) {
-          allPets = allPets.filter((pet) => filters.size.includes(pet.size));
-        }
-
-        if (filters.species) {
-           allPets = allPets.filter(pet => pet.species === filters.species);
-        }
-
-        setPets(allPets);
-        setNoResults(allPets.length === 0);
+        const petsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setAllPets(petsData); // Guardar sin filtros
       } catch (error) {
         console.error('Error fetching pets:', error);
       } finally {
         setLoading(false);
+        hasInitialized.current = true;
       }
     };
 
-    fetchPets();
-  }, [filters]);
+    if (!hasInitialized.current) {
+      fetchPets();
+    }
+  }, []); // ⚠️ VACÍO: solo se ejecuta una vez al montar
+
+  // 🆕 FILTRAR PETS SIN RE-RENDER COMPLETO (sin scroll)
+  useEffect(() => {
+    if (!hasInitialized.current) return;
+
+    let filtered = [...allPets];
+
+    if (filters.age && filters.age.length > 0) {
+      filtered = filtered.filter((pet) => filters.age.includes(pet.age));
+    }
+    
+    if (filters.size && filters.size.length > 0) {
+      filtered = filtered.filter((pet) => filters.size.includes(pet.size));
+    }
+
+    if (filters.species) {
+      filtered = filtered.filter(pet => pet.species === filters.species);
+    }
+
+    setPets(filtered);
+    setNoResults(filtered.length === 0);
+  }, [filters, allPets]); // Depende de filters
 
   if (loading) {
     return (
