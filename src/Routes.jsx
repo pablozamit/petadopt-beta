@@ -20,6 +20,7 @@ import PoliticaCookies from "pages/politica-cookies";
 import PoliticaPrivacidad from "pages/politica-privacidad";
 import TerminosCondiciones from "pages/terminos-condiciones";
 import ComoFunciona from "pages/como-funciona";
+import MessagingPage from "pages/messaging";
 import NotFound from "pages/NotFound";
 
 const Routes = () => {
@@ -56,6 +57,9 @@ const Routes = () => {
           {/* Página Cómo Funciona */}
           <Route path="/como-funciona" element={<ComoFunciona />} />
           
+          {/* Messaging Route */}
+          <Route path="/messages" element={<MessagingPage />} />
+
           {/* Catch-all route for 404 */}
           <Route path="*" element={<NotFound />} />
         </RouterRoutes>
