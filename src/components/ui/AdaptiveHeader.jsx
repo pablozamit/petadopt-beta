@@ -2,14 +2,22 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import Icon from '../AppIcon';
 import { useAuth } from '../../hooks/useAuth';
+import { useMessaging } from '../../hooks/useMessaging'; // 🆕 NUEVO
+import UnreadBadge from '../messaging/UnreadBadge'; // 🆕 NUEVO
 
 const AdaptiveHeader = () => {
-  // AHORA: Importamos también userData para saber el rol
   const { user, userData, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // 🆕 NUEVO: Hook de mensajería
+  const { totalUnread } = useMessaging(
+    user?.uid, 
+    userData?.role, 
+    userData?.displayName
+  );
 
   const handleLogout = async () => {
     await logout();
@@ -28,9 +36,8 @@ const AdaptiveHeader = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // Lógica para saber a dónde mandar al usuario según su rol
   const getDashboardPath = () => {
-    if (!userData) return '/adopter-panel'; // Fallback por defecto
+    if (!userData) return '/adopter-panel';
     
     switch (userData.role) {
       case 'shelter':
@@ -63,7 +70,7 @@ const AdaptiveHeader = () => {
             </button>
           </div>
 
-          {/* Desktop Navigation - Siempre visible */}
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/"
@@ -105,7 +112,7 @@ const AdaptiveHeader = () => {
 
             {/* Auth Area */}
             {!user ? (
-              /* NO LOGUEADO: Botón Acceder */
+              /* NO LOGUEADO */
               <div className="relative">
                 <button
                   onClick={() => setShowLoginDropdown(!showLoginDropdown)}
@@ -156,7 +163,7 @@ const AdaptiveHeader = () => {
                 )}
               </div>
             ) : (
-              /* LOGUEADO: Mi Panel + Cerrar Sesión */
+              /* LOGUEADO: Mi Panel + Mensajes + Cerrar Sesión */
               <div className="flex items-center space-x-3">
                 <Link
                   to={getDashboardPath()}
@@ -164,6 +171,16 @@ const AdaptiveHeader = () => {
                 >
                   <Icon name="LayoutDashboard" size={18} />
                   <span>Mi Panel</span>
+                </Link>
+
+                {/* 🆕 NUEVO: Icono de Mensajes con badge */}
+                <Link
+                  to="/messages"
+                  className="relative p-2 text-text-secondary hover:text-primary hover:bg-surface rounded-lg transition-colors"
+                  title="Mensajes"
+                >
+                  <Icon name="MessageSquare" size={20} />
+                  <UnreadBadge count={totalUnread} />
                 </Link>
                 
                 <button
@@ -265,6 +282,17 @@ const AdaptiveHeader = () => {
                   >
                     <Icon name="LayoutDashboard" size={20} />
                     <span className="font-medium">Mi Panel</span>
+                  </Link>
+
+                  {/* 🆕 NUEVO: Mensajes en Mobile */}
+                  <Link
+                    to="/messages"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-text-secondary hover:bg-surface relative"
+                  >
+                    <Icon name="MessageSquare" size={20} />
+                    <span className="font-medium">Mensajes</span>
+                    <UnreadBadge count={totalUnread} />
                   </Link>
                   
                   <button
