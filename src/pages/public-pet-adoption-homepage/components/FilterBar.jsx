@@ -61,6 +61,17 @@ const FilterBar = ({ filters, onFilterChange, resultsCount }) => {
 
   const hasActiveFilters = Object.values(filters).some(filter => filter !== '');
 
+  // 🆕 NUEVO: Función para manejar cambios de filtro SIN scroll
+  const handleFilterChange = (filterName, value) => {
+    const scrollPos = window.scrollY;
+    onFilterChange(filterName, value);
+    
+    // Restaurar scroll después del cambio
+    setTimeout(() => {
+      window.scrollTo(0, scrollPos);
+    }, 0);
+  };
+
   const clearAllFilters = () => {
     onFilterChange('species', '');
     onFilterChange('age', '');
@@ -110,7 +121,7 @@ const FilterBar = ({ filters, onFilterChange, resultsCount }) => {
               </label>
               <select
                 value={filters.species}
-                onChange={(e) => onFilterChange('species', e.target.value)}
+                onChange={(e) => handleFilterChange('species', e.target.value)}
                 className="input-field text-sm"
               >
                 {speciesOptions.map(option => (
@@ -128,7 +139,7 @@ const FilterBar = ({ filters, onFilterChange, resultsCount }) => {
               </label>
               <select
                 value={filters.age}
-                onChange={(e) => onFilterChange('age', e.target.value)}
+                onChange={(e) => handleFilterChange('age', e.target.value)}
                 className="input-field text-sm"
               >
                 {ageOptions.map(option => (
@@ -146,7 +157,7 @@ const FilterBar = ({ filters, onFilterChange, resultsCount }) => {
               </label>
               <select
                 value={filters.size}
-                onChange={(e) => onFilterChange('size', e.target.value)}
+                onChange={(e) => handleFilterChange('size', e.target.value)}
                 className="input-field text-sm"
               >
                 {sizeOptions.map(option => (
@@ -164,7 +175,7 @@ const FilterBar = ({ filters, onFilterChange, resultsCount }) => {
               </label>
               <select
                 value={filters.province}
-                onChange={(e) => onFilterChange('province', e.target.value)}
+                onChange={(e) => handleFilterChange('province', e.target.value)}
                 className="input-field text-sm"
               >
                 {provinceOptions.map(option => (
@@ -208,7 +219,7 @@ const FilterBar = ({ filters, onFilterChange, resultsCount }) => {
                   <span className="inline-flex items-center space-x-1 px-3 py-1 bg-primary-100 text-primary rounded-full text-sm">
                     <span>{speciesOptions.find(opt => opt.value === filters.species)?.label}</span>
                     <button
-                      onClick={() => onFilterChange('species', '')}
+                      onClick={() => handleFilterChange('species', '')}
                       className="hover:bg-primary-200 rounded-full p-0.5"
                     >
                       <Icon name="X" size={12} />
@@ -219,7 +230,7 @@ const FilterBar = ({ filters, onFilterChange, resultsCount }) => {
                   <span className="inline-flex items-center space-x-1 px-3 py-1 bg-secondary-100 text-secondary rounded-full text-sm">
                     <span>{ageOptions.find(opt => opt.value === filters.age)?.label}</span>
                     <button
-                      onClick={() => onFilterChange('age', '')}
+                      onClick={() => handleFilterChange('age', '')}
                       className="hover:bg-secondary-200 rounded-full p-0.5"
                     >
                       <Icon name="X" size={12} />
@@ -230,7 +241,7 @@ const FilterBar = ({ filters, onFilterChange, resultsCount }) => {
                   <span className="inline-flex items-center space-x-1 px-3 py-1 bg-accent-100 text-accent-700 rounded-full text-sm">
                     <span>{sizeOptions.find(opt => opt.value === filters.size)?.label}</span>
                     <button
-                      onClick={() => onFilterChange('size', '')}
+                      onClick={() => handleFilterChange('size', '')}
                       className="hover:bg-accent-200 rounded-full p-0.5"
                     >
                       <Icon name="X" size={12} />
@@ -241,7 +252,7 @@ const FilterBar = ({ filters, onFilterChange, resultsCount }) => {
                   <span className="inline-flex items-center space-x-1 px-3 py-1 bg-primary-100 text-primary rounded-full text-sm">
                     <span>{provinceOptions.find(opt => opt.value === filters.province)?.label}</span>
                     <button
-                      onClick={() => onFilterChange('province', '')}
+                      onClick={() => handleFilterChange('province', '')}
                       className="hover:bg-primary-200 rounded-full p-0.5"
                     >
                       <Icon name="X" size={12} />
