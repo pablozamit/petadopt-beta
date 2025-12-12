@@ -50,14 +50,16 @@ const MessagingLayout = ({
           onSendMessage={onSendMessage} 
           onBack={() => { 
             // Cerrar chat en mobile 
-            // setCurrentConversationId(null); 
+            onSelectConversation(null); 
           }} 
           loading={loading} 
         /> 
       ) : ( 
         <div className="hidden md:flex flex-1 items-center justify-center bg-gray-50"> 
           <p className="text-gray-500 text-center"> 
-            Selecciona una conversación para continuar 
+            {loading 
+              ? "Cargando conversaciones..." 
+              : "Selecciona una conversación para continuar"} 
           </p> 
         </div> 
       )} 
