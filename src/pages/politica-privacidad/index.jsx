@@ -55,13 +55,13 @@ const PoliticaPrivacidad = () => {
               </p>
               <div className="bg-primary-50 border-l-4 border-primary p-4 mb-4">
                 <p className="text-text-primary mb-2">
-                  <strong>Responsable:</strong> OH MY PAWZ, S.L.
+                  <strong>Responsable:</strong> Oh My Pawz S.L.
                 </p>
                 <p className="text-text-primary mb-2">
                   <strong>NIF:</strong> B56178767
                 </p>
                 <p className="text-text-primary mb-2">
-                  <strong>Dirección:</strong> Calle Luis Martínez, 21 - 39005 Santander (Cantabria)
+                  <strong>Dirección:</strong> Calle Luis Martinez 21, 39005 Santander
                 </p>
                 <p className="text-text-primary mb-2">
                   <strong>Teléfono:</strong> 615 033 513
@@ -78,7 +78,7 @@ const PoliticaPrivacidad = () => {
                 Información Completa del Tratamiento
               </h2>
               <p className="text-text-secondary mb-4">
-                <strong>OH MY PAWZ, S.L.</strong> es el Responsable del tratamiento de los datos personales del Interesado y le informa de que estos datos se tratarán de conformidad con lo dispuesto en el Reglamento (UE) 2016/679, de 27 de abril (GDPR), y la Ley Orgánica 3/2018, de 5 de diciembre (LOPDGDD), por lo que se le facilita la siguiente información del tratamiento:
+                <strong>Oh My Pawz S.L.</strong> es el Responsable del tratamiento de los datos personales del Interesado y le informa de que estos datos se tratarán de conformidad con lo dispuesto en el Reglamento (UE) 2016/679, de 27 de abril (GDPR), y la Ley Orgánica 3/2018, de 5 de diciembre (LOPDGDD), por lo que se le facilita la siguiente información del tratamiento:
               </p>
             </section>
 
@@ -132,8 +132,8 @@ const PoliticaPrivacidad = () => {
                 <p className="text-text-primary mb-2">
                   <strong>Datos de contacto para ejercer sus derechos:</strong>
                 </p>
-                <p className="text-text-primary mb-1">OH MY PAWZ, S.L.</p>
-                <p className="text-text-primary mb-1">Calle Luis Martínez, 21 - 39005 Santander (Cantabria)</p>
+                <p className="text-text-primary mb-1">Oh My Pawz S.L.</p>
+                <p className="text-text-primary mb-1">Calle Luis Martinez 21, 39005 Santander</p>
                 <p className="text-text-primary">E-mail: info@paw-unique.com</p>
               </div>
             </section>
@@ -188,17 +188,17 @@ const PoliticaPrivacidad = () => {
                 Aviso Legal
               </h3>
               <p className="text-text-secondary mb-4">
-                Este mensaje y sus archivos adjuntos van dirigidos exclusivamente a su destinatario, pudiendo contener información confidencial sometida a secreto profesional. No está permitida su comunicación, reproducción o distribución sin la autorización expresa de OH MY PAWZ, S.L. Si usted no es el destinatario final, por favor, elimínelo e infórmenos por esta vía.
+                Este mensaje y sus archivos adjuntos van dirigidos exclusivamente a su destinatario, pudiendo contener información confidencial sometida a secreto profesional. No está permitida su comunicación, reproducción o distribución sin la autorización expresa de Oh My Pawz S.L. Si usted no es el destinatario final, por favor, elimínelo e infórmenos por esta vía.
               </p>
 
               <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
                 Protección de Datos
               </h3>
               <p className="text-text-secondary mb-4">
-                De conformidad con lo dispuesto en el Reglamento (UE) 2016/679, de 27 de abril (GDPR), y la Ley Orgánica 3/2018, de 5 de diciembre (LOPDGDD), le informamos de que los datos personales y la dirección de correo electrónico del interesado, se tratarán bajo la responsabilidad de OH MY PAWZ, S.L. por un interés legítimo y para el envío de comunicaciones sobre nuestros productos y servicios, y se conservarán mientras ninguna de las partes se oponga a ello. Los datos no se comunicarán a terceros, salvo obligación legal.
+                De conformidad con lo dispuesto en el Reglamento (UE) 2016/679, de 27 de abril (GDPR), y la Ley Orgánica 3/2018, de 5 de diciembre (LOPDGDD), le informamos de que los datos personales y la dirección de correo electrónico del interesado, se tratarán bajo la responsabilidad de Oh My Pawz S.L. por un interés legítimo y para el envío de comunicaciones sobre nuestros productos y servicios, y se conservarán mientras ninguna de las partes se oponga a ello. Los datos no se comunicarán a terceros, salvo obligación legal.
               </p>
               <p className="text-text-secondary mb-4">
-                Le informamos de que puede ejercer los derechos de acceso, rectificación, portabilidad y supresión de sus datos y los de limitación y oposición a su tratamiento dirigiéndose a Calle Luis Martínez, 21 - 39005 Santander (Cantabria). E-mail: info@paw-unique.com. Si considera que el tratamiento no se ajusta a la normativa vigente, podrá presentar una reclamación ante la autoridad de control en <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.aepd.es</a>.
+                Le informamos de que puede ejercer los derechos de acceso, rectificación, portabilidad y supresión de sus datos y los de limitación y oposición a su tratamiento dirigiéndose a Calle Luis Martinez 21, 39005 Santander. E-mail: info@paw-unique.com. Si considera que el tratamiento no se ajusta a la normativa vigente, podrá presentar una reclamación ante la autoridad de control en <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.aepd.es</a>.
               </p>
 
               <h3 className="text-xl font-semibold text-text-primary mb-3 mt-6">
@@ -225,9 +225,9 @@ const PoliticaPrivacidad = () => {
                 <p className="text-text-primary mb-2">
                   <strong>Para ejercer su derecho de desistimiento, contacte con:</strong>
                 </p>
-                <p className="text-text-primary mb-1">OH MY PAWZ, S.L.</p>
+                <p className="text-text-primary mb-1">Oh My Pawz S.L.</p>
                 <p className="text-text-primary mb-1">NIF: B56178767</p>
-                <p className="text-text-primary mb-1">Calle Luis Martínez, 21 - 39005 Santander (Cantabria)</p>
+                <p className="text-text-primary mb-1">Calle Luis Martinez 21, 39005 Santander</p>
                 <p className="text-text-primary mb-1">Teléfono: 615 033 513</p>
                 <p className="text-text-primary">Email: mabbn2003@yahoo.es</p>
               </div>
@@ -239,7 +239,7 @@ const PoliticaPrivacidad = () => {
       {/* Footer */}
       <footer className="bg-surface border-t border-border-light mt-16 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-text-secondary">
-          <p>© {new Date().getFullYear()} OH MY PAWZ, S.L. - AdoptaEspaña. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} Oh My Pawz S.L. - AdoptaEspaña. Todos los derechos reservados.</p>
         </div>
       </footer>
     </div>
