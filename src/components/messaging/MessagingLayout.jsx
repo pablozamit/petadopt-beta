@@ -17,7 +17,7 @@ const MessagingLayout = ({
   const currentConversation = conversations.find( 
     (c) => c.id === currentConversationId 
   ); 
-  const otherParticipantId = getOtherParticipantId(currentConversation); 
+  const otherParticipantId = currentConversation ? getOtherParticipantId(currentConversation) : null; 
   const otherInfo = currentConversation 
     ? getOtherParticipantInfo(currentConversation) 
     : null; 
