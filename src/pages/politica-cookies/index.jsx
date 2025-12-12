@@ -182,7 +182,7 @@ const PoliticaCookies = () => {
                 Tratamiento de Datos Personales
               </h2>
               <p className="text-text-secondary mb-4">
-                <strong>OH MY PAWZ, S.L.</strong> es el Responsable del tratamiento de los datos personales del Interesado y le informa de que estos datos serán tratados de conformidad con lo dispuesto en el Reglamento (UE) 2016/679, de 27 de abril de 2016 (GDPR), por lo que se le facilita la siguiente información del tratamiento:
+                <strong>Oh My Pawz S.L.</strong> es el Responsable del tratamiento de los datos personales del Interesado y le informa de que estos datos serán tratados de conformidad con lo dispuesto en el Reglamento (UE) 2016/679, de 27 de abril de 2016 (GDPR), por lo que se le facilita la siguiente información del tratamiento:
               </p>
 
               <div className="bg-primary-50 border-l-4 border-primary p-4 mb-4">
@@ -213,8 +213,8 @@ const PoliticaCookies = () => {
                 <p className="text-text-primary mb-2">
                   <strong>Datos de contacto para ejercer sus derechos:</strong>
                 </p>
-                <p className="text-text-primary mb-1">OH MY PAWZ, S.L.</p>
-                <p className="text-text-primary mb-1">Calle Luis Martínez, 21 - 39005 Santander (Cantabria)</p>
+                <p className="text-text-primary mb-1">Oh My Pawz S.L.</p>
+                <p className="text-text-primary mb-1">Calle Luis Martinez 21, 39005 Santander</p>
                 <p className="text-text-primary">E-mail: info@paw-unique.com</p>
               </div>
             </section>
@@ -328,7 +328,7 @@ const PoliticaCookies = () => {
       {/* Footer */}
       <footer className="bg-surface border-t border-border-light mt-16 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-text-secondary">
-          <p>© {new Date().getFullYear()} OH MY PAWZ, S.L. - AdoptaEspaña. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} Oh My Pawz S.L. - AdoptaEspaña. Todos los derechos reservados.</p>
         </div>
       </footer>
     </div>
