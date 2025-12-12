@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"; 
+import { useState, useEffect, useCallback, useRef } from "react"; 
 import { 
   onUserConversationsChange, 
   onConversationMessagesChange, 
@@ -7,15 +7,46 @@ import {
   markConversationAsRead, 
   getOrCreateConversation, 
   getTotalUnreadMessages, 
-} from "../services/messagingService"; 
- 
+} from "../services/messagingService";
+import { logError } from "../services/errorLogger";
+
+/**
+ * ✅ PHASE 1: useMessaging Hook con optimizaciones
+ */
+
+// ✅ Helper: Debounce function
+const createDebounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+};
+
+// ✅ Helper: Throttle function  
+const createThrottle = (func, limit) => {
+  let inThrottle;
+  return (...args) => {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+};
+
 export const useMessaging = (currentUserId, currentUserType, currentUserName) => { 
   const [conversations, setConversations] = useState([]); 
   const [currentConversationId, setCurrentConversationId] = useState(null); 
   const [currentMessages, setCurrentMessages] = useState([]); 
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState(null); 
-  const [totalUnread, setTotalUnread] = useState(0); 
+  const [totalUnread, setTotalUnread] = useState(0);
+  
+  // ✅ NUEVO: Rastrear qué mensajes se han marcado como leídos
+  const markedAsReadRef = useRef(new Set());
+  const throttledMarkAsReadRef = useRef(null);
+  const unsubscribersRef = useRef([]);
  
   // Listener en tiempo real para conversaciones 
   useEffect(() => { 
@@ -26,14 +57,39 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
       setConversations(convs); 
       setLoading(false); 
     }); 
- 
-    return unsubscribe; 
+
+    unsubscribersRef.current.push(unsubscribe);
+    return () => {
+      unsubscribe();
+    };
   }, [currentUserId]); 
+ 
+  // ✅ NUEVO: Crear throttle para marcar mensajes como leídos
+  useEffect(() => {
+    throttledMarkAsReadRef.current = createThrottle(() => {
+      if (!currentConversationId || !currentUserId) return;
+      
+      const unreadMessageIds = currentMessages
+        .filter(msg => msg.senderId !== currentUserId && !msg.readBy?.[currentUserId])
+        .map(msg => msg.id);
+
+      if (unreadMessageIds.length === 0) return;
+
+      // Marcar solo los que no se han marcado en este ciclo
+      const toMark = unreadMessageIds.filter(id => !markedAsReadRef.current.has(id));
+      
+      toMark.forEach(msgId => {
+        markMessageAsRead(currentConversationId, msgId, currentUserId);
+        markedAsReadRef.current.add(msgId);
+      });
+    }, 1000); // Máximo una vez por segundo
+  }, [currentConversationId, currentUserId, currentMessages]);
  
   // Listener en tiempo real para mensajes de conversación actual 
   useEffect(() => { 
     if (!currentConversationId) { 
       setCurrentMessages([]); 
+      markedAsReadRef.current.clear();
       return; 
     } 
  
@@ -42,30 +98,38 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
       (messages) => { 
         setCurrentMessages(messages); 
          
-        // Auto-marcar como leído después de 500ms 
-        const timer = setTimeout(() => { 
-          messages.forEach(msg => { 
-            if (msg.senderId !== currentUserId && !msg.readBy?.[currentUserId]) { 
-              markMessageAsRead(currentConversationId, msg.id, currentUserId); 
-            } 
-          }); 
-        }, 500); 
- 
-        return () => clearTimeout(timer); 
+        // ✅ OPTIMIZADO: Usar throttle en lugar de timeout
+        if (throttledMarkAsReadRef.current) {
+          throttledMarkAsReadRef.current();
+        }
       } 
     ); 
- 
-    return unsubscribe; 
+
+    unsubscribersRef.current.push(unsubscribe);
+    return () => {
+      unsubscribe();
+    };
   }, [currentConversationId, currentUserId]); 
  
-  // Calcular total no leído 
+  // Calcular total no leído con debounce para no overcargar
   useEffect(() => { 
     if (!currentUserId || !conversations.length) { 
       setTotalUnread(0); 
       return; 
     } 
- 
-    getTotalUnreadMessages(currentUserId).then(setTotalUnread); 
+
+    const updateUnread = async () => {
+      try {
+        const count = await getTotalUnreadMessages(currentUserId);
+        setTotalUnread(count);
+      } catch (err) {
+        console.error("Error getting total unread:", err);
+      }
+    };
+
+    // ✅ NUEVO: Usar debounce para evitar queries excesivas
+    const debouncedUpdate = createDebounce(updateUnread, 2000);
+    debouncedUpdate();
   }, [conversations, currentUserId]); 
  
   // Iniciar conversación con otro usuario 
@@ -73,18 +137,26 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
     try { 
       const convId = await getOrCreateConversation(currentUserId, otherUserId); 
       setCurrentConversationId(convId); 
-      // Marcar conversación como leída 
+      markedAsReadRef.current.clear();
       await markConversationAsRead(convId, currentUserId); 
     } catch (err) { 
-      setError(err.message); 
-      console.error("Error al iniciar conversación:", err); 
+      const errorMsg = err.message || "Error al iniciar conversación";
+      setError(errorMsg); 
+      await logError({
+        type: "startConversation_failed",
+        message: errorMsg,
+        context: { otherUserId, currentUserId }
+      });
     } 
   }, [currentUserId]); 
  
-  // Enviar mensaje 
+  // Enviar mensaje con validación 
   const sendMessage = useCallback( 
     async (text) => { 
-      if (!text.trim() || !currentConversationId) return; 
+      if (!text.trim() || !currentConversationId) {
+        setError("El mensaje no puede estar vacío");
+        return;
+      }
  
       try { 
         await sendMessageService( 
@@ -93,10 +165,16 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
           currentUserName, 
           currentUserType, 
           text.trim() 
-        ); 
+        );
+        setError(null);
       } catch (err) { 
-        setError(err.message); 
-        console.error("Error al enviar mensaje:", err); 
+        const errorMsg = err.message || "Error al enviar mensaje";
+        setError(errorMsg); 
+        await logError({
+          type: "sendMessage_failed",
+          message: errorMsg,
+          context: { conversationId: currentConversationId, userId: currentUserId }
+        });
       } 
     }, 
     [currentConversationId, currentUserId, currentUserType, currentUserName] 
@@ -105,7 +183,16 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
   // Obtener nombre del otro participante 
   const getOtherParticipantId = useCallback((conversation) => { 
     return conversation.participants.find(id => id !== currentUserId); 
-  }, [currentUserId]); 
+  }, [currentUserId]);
+
+  // ✅ NUEVO: Cleanup al desmontar
+  useEffect(() => {
+    return () => {
+      unsubscribersRef.current.forEach(unsub => {
+        if (typeof unsub === 'function') unsub();
+      });
+    };
+  }, []);
  
   return { 
     conversations, 
@@ -114,6 +201,7 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
     currentMessages, 
     loading, 
     error, 
+    setError,
     totalUnread, 
     sendMessage, 
     startConversation, 
