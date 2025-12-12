@@ -1,0 +1,167 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ======= HELPER FUNCTIONS =======
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+    
+    function isConversationParticipant(conversationId) {
+      let participants = get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+      return request.auth.uid in participants;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ======= USERS COLLECTION =======
+    match /users/{userId} {
+      // ✅ Usuario puede leer su propio perfil
+      allow read: if isUser(userId);
+      
+      // ✅ Usuario puede leer perfiles públicos de otros
+      allow read: if isAuthenticated() && resource.data.isPublic == true;
+      
+      // ✅ Usuario puede actualizar su propio perfil
+      allow update: if isUser(userId) && 
+                       // ✅ No permitir cambiar role
+                       !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
+      
+      // ✅ Solo admin puede crear usuarios (normalmente es auth)
+      allow create: if false; // Crear usuarios desde Auth, no Firestore
+      
+      // ✅ Solo admin puede borrar usuarios
+      allow delete: if isAdmin();
+      
+      // ✅ Subcolección: user statistics
+      match /stats/{doc=**} {
+        allow read: if isUser(userId);
+        allow write: if isUser(userId);
+      }
+    }
+    
+    // ======= CONVERSATIONS COLLECTION =======
+    match /conversations/{conversationId} {
+      // ✅ Solo participantes pueden leer
+      allow read: if isAuthenticated() && isConversationParticipant(conversationId);
+      
+      // ✅ Solo participantes pueden actualizar
+      allow update: if isAuthenticated() && isConversationParticipant(conversationId);
+      
+      // ✅ Crear conversación: ambos usuarios deben existir y ser autenticados
+      allow create: if isAuthenticated() && 
+                       request.resource.data.participants.hasAny([request.auth.uid]) &&
+                       request.resource.data.participants.size() == 2;
+      
+      // ✅ Solo admin puede borrar
+      allow delete: if isAdmin();
+      
+      // ✅ Subcolección: Messages dentro de conversación
+      match /messages/{messageId} {
+        // ✅ Solo participantes pueden leer mensajes
+        allow read: if isAuthenticated() && isConversationParticipant(conversationId);
+        
+        // ✅ Crear mensaje: solo si eres participante
+        allow create: if isAuthenticated() && 
+                         isConversationParticipant(conversationId) &&
+                         // El senderId debe ser el usuario actual
+                         request.resource.data.senderId == request.auth.uid &&
+                         // Validar campos requeridos
+                         request.resource.data.text is string &&
+                         request.resource.data.text.size() > 0 &&
+                         request.resource.data.senderName is string &&
+                         request.resource.data.createdAt is timestamp;
+        
+        // ✅ Actualizar: solo el remitente puede editar su mensaje, y solo para marcar como leído
+        allow update: if isAuthenticated() && 
+                         isConversationParticipant(conversationId) && 
+                         // Solo permitir actualizar readBy
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']) &&
+                         // No permitir que el remitente borre el mensaje
+                         request.resource.data.senderId == resource.data.senderId;
+        
+        // ✅ Borrar: solo admin o en 30 minutos después de crear
+        allow delete: if isAdmin() || 
+                         (request.auth.uid == resource.data.senderId && 
+                          request.time < resource.data.createdAt + duration.value(30, 'm'));
+      }
+    }
+    
+    // ======= ERROR LOGS COLLECTION (Admin only) =======
+    match /error_logs/{logId} {
+      // ✅ Crear logs desde cliente (con limites)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // ✅ Solo admin puede leer logs
+      allow read: if isAdmin();
+      
+      // ✅ Solo admin puede actualizar (resolver)
+      allow update: if isAdmin();
+      
+      // ✅ Solo admin puede borrar
+      allow delete: if isAdmin();
+    }
+    
+    // ======= ANIMALS COLLECTION =======
+    match /animals/{animalId} {
+      // ✅ Todos pueden leer animales públicos
+      allow read: if isAuthenticated();
+      
+      // ✅ Protectoras/refugios pueden crear
+      allow create: if isAuthenticated() && 
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['protectora', 'refugio'] &&
+                       request.resource.data.organizationId == request.auth.uid;
+      
+      // ✅ Solo dueno puede actualizar
+      allow update: if isAuthenticated() && 
+                       resource.data.organizationId == request.auth.uid;
+      
+      // ✅ Solo dueno puede borrar
+      allow delete: if isAuthenticated() && 
+                       resource.data.organizationId == request.auth.uid;
+    }
+    
+    // ======= ADOPTIONS COLLECTION =======
+    match /adoptions/{adoptionId} {
+      // ✅ Usuario puede leer sus propias adopciones
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || 
+                      resource.data.organizationId == request.auth.uid);
+      
+      // ✅ Usuarios pueden crear solicitud de adopción
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // ✅ Org puede actualizar estado
+      allow update: if isAuthenticated() && 
+                       resource.data.organizationId == request.auth.uid;
+      
+      // ✅ No permitir borrar (mantener historial)
+      allow delete: if isAdmin();
+    }
+    
+    // ======= FAVORITES COLLECTION =======
+    match /favorites/{userId} {
+      // ✅ Usuario puede leer sus favoritos
+      allow read: if isUser(userId);
+      
+      // ✅ Usuario puede actualizar sus favoritos
+      allow write: if isUser(userId);
+      
+      // ✅ No permitir borrar
+      allow delete: if false;
+    }
+    
+    // ======= DEFAULT: DENY ALL =======
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
