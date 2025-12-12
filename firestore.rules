@@ -66,7 +66,7 @@ service cloud.firestore {
       // ✅ Solo participantes pueden leer
       allow read: if isAuthenticated() && isConversationParticipant(conversationId);
       
-      // ✅ Solo participantes pueden actualizar
+      // ✅ Solo participantes pueden actualizar (incluye lastReadAt)
       allow update: if isAuthenticated() && isConversationParticipant(conversationId);
       
       // ✅ Crear conversación: ambos usuarios deben existir
@@ -77,7 +77,7 @@ service cloud.firestore {
       // ✅ Solo admin puede borrar
       allow delete: if isAdmin();
       
-      // ✅ SUBCOLECCIÓN: Mensajes dentro de conversación
+      // ✅ SUBCOLECCION: Mensajes dentro de conversación
       match /messages/{messageId} {
         // ✅ Solo participantes pueden leer mensajes
         allow read: if isAuthenticated() && isConversationParticipant(conversationId);
@@ -103,7 +103,7 @@ service cloud.firestore {
     }
     
     // ======= PROFESSIONALS COLLECTION =======
-    // Coleccsión separada para veterinarios, educadores, peluqueros, etc.
+    // Coleccsion separada para veterinarios, educadores, peluqueros, etc.
     match /professionals/{professionalId} {
       // ✅ Todos pueden leer profesionales verificados
       allow read: if isAuthenticated() && resource.data.verified == true;
@@ -126,7 +126,7 @@ service cloud.firestore {
       // ✅ Solo admin puede borrar
       allow delete: if isAdmin();
       
-      // ✅ SUBCOLECCIÓN: Reviews de profesionales
+      // ✅ SUBCOLECCION: Reviews de profesionales
       match /reviews/{reviewId} {
         allow read: if true; // Público
         allow create: if isAuthenticated() && 
