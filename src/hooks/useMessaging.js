@@ -47,6 +47,7 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
   const markedAsReadRef = useRef(new Set());
   const throttledMarkAsReadRef = useRef(null);
   const unsubscribersRef = useRef([]);
+  const debouncedUpdateUnreadRef = useRef(null);
  
   // Listener en tiempo real para conversaciones 
   useEffect(() => { 
@@ -111,9 +112,9 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
     };
   }, [currentConversationId, currentUserId]); 
  
-  // Calcular total no leído con debounce para no overcargar
+  // ✅ CRÍTICO: Calcular total no leído con debounce y REFRESCAR cuando se cierra conversación
   useEffect(() => { 
-    if (!currentUserId || !conversations.length) { 
+    if (!currentUserId) { 
       setTotalUnread(0); 
       return; 
     } 
@@ -128,9 +129,30 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
     };
 
     // ✅ NUEVO: Usar debounce para evitar queries excesivas
-    const debouncedUpdate = createDebounce(updateUnread, 2000);
-    debouncedUpdate();
+    if (!debouncedUpdateUnreadRef.current) {
+      debouncedUpdateUnreadRef.current = createDebounce(updateUnread, 2000);
+    }
+    debouncedUpdateUnreadRef.current();
   }, [conversations, currentUserId]); 
+
+  // ✅ CRÍTICO (FIX 2): Refrescar contador de no leídos cuando se CIERRA una conversación
+  useEffect(() => {
+    if (!currentUserId || currentConversationId !== null) return;
+    
+    // El usuario cerró la conversación, refrescar contadores
+    const updateUnread = async () => {
+      try {
+        const count = await getTotalUnreadMessages(currentUserId);
+        setTotalUnread(count);
+      } catch (err) {
+        console.error("Error refreshing unread after closing conversation:", err);
+      }
+    };
+
+    // Esperar un poco para que se procesen los cambios en Firestore
+    const timeoutId = setTimeout(updateUnread, 500);
+    return () => clearTimeout(timeoutId);
+  }, [currentConversationId, currentUserId]);
  
   // Iniciar conversación con otro usuario 
   const startConversation = useCallback(async (otherUserId) => { 
