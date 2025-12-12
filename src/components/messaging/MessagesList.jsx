@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react"; 
 import ConversationItem from "./ConversationItem"; 
-import { MessageSquare } from "lucide-react"; 
+import { MessageSquare, Inbox } from "lucide-react"; 
  
 const MessagesList = ({ 
   conversations, 
@@ -21,14 +21,6 @@ const MessagesList = ({
     }); 
   }, [conversations, searchTerm, getOtherParticipantInfo]); 
  
-  if (loading) { 
-    return ( 
-      <div className="w-full md:w-80 border-r bg-white flex items-center justify-center"> 
-        <p className="text-gray-500">Cargando conversaciones...</p> 
-      </div> 
-    ); 
-  } 
- 
   return ( 
     <div className="w-full md:w-80 border-r bg-white flex flex-col h-full"> 
       {/* Header */} 
@@ -48,15 +40,33 @@ const MessagesList = ({
  
       {/* Conversations List */} 
       <div className="flex-1 overflow-y-auto"> 
-        {filteredConversations.length === 0 ? ( 
+        {loading ? ( 
+          // Estado de carga
           <div className="flex items-center justify-center h-full"> 
-            <p className="text-gray-500 text-center px-4"> 
-              {searchTerm 
-                ? "No se encontraron conversaciones" 
-                : "Sin conversaciones aún"} 
-            </p> 
+            <div className="text-center"> 
+              <div className="inline-block"> 
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div> 
+              </div> 
+              <p className="text-gray-500 text-sm">Cargando conversaciones...</p> 
+            </div> 
+          </div> 
+        ) : filteredConversations.length === 0 ? ( 
+          // Estado vacío 
+          <div className="flex items-center justify-center h-full"> 
+            <div className="text-center px-4"> 
+              <Inbox size={48} className="mx-auto text-gray-300 mb-3" /> 
+              <p className="text-gray-600 font-medium mb-1"> 
+                {searchTerm ? "No se encontraron conversaciones" : "Sin conversaciones aún"} 
+              </p> 
+              {!searchTerm && ( 
+                <p className="text-gray-500 text-sm"> 
+                  Cuando recibas o envíes mensajes, aparecerán aquí 
+                </p> 
+              )} 
+            </div> 
           </div> 
         ) : ( 
+          // Lista de conversaciones 
           filteredConversations.map((conversation) => { 
             const otherInfo = getOtherParticipantInfo(conversation); 
             const unreadCount = getUnreadCount(conversation); 
