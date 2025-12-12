@@ -41,7 +41,8 @@ export const getOrCreateConversation = async (user1Id, user2Id) => {
         lastMessageTime: serverTimestamp(), 
         createdAt: serverTimestamp(), 
         updatedAt: serverTimestamp(),
-        unreadCountByUser: {} // ✅ NUEVO: Contador de no leídos optimizado
+        lastReadAt: serverTimestamp(), // ✅ NUEVO: Campo para forzar actualizaciones del listener
+        unreadCountByUser: {} // ✅ Contador de no leídos optimizado
       }); 
     } 
      
@@ -261,9 +262,16 @@ export const markMessageAsRead = async (conversationId, messageId, userId) => {
       return; 
     } 
      
-    await updateDoc(messageRef, { 
+    // ✅ CRÍTICO (FIX 1): Usar batch para actualizar mensaje Y conversación
+    // Esto fuerza que el listener de conversaciones se dispare
+    const batch = writeBatch(db);
+    batch.update(messageRef, { 
       [`readBy.${userId}`]: Timestamp.now(), 
     });
+    batch.update(doc(db, "conversations", conversationId), {
+      lastReadAt: serverTimestamp() // ✅ NUEVO: Trigger para que listener reaccione
+    });
+    await batch.commit();
   } catch (err) {
     await logError({
       type: 'markMessageAsRead_failed',
@@ -298,6 +306,11 @@ export const markConversationAsRead = async (conversationId, userId) => {
         [`readBy.${userId}`]: Timestamp.now(), 
       }); 
     }); 
+
+    // ✅ CRÍTICO (FIX 1): Actualizar lastReadAt para forzar listener
+    batch.update(doc(db, "conversations", conversationId), {
+      lastReadAt: serverTimestamp()
+    });
      
     await batch.commit();
   } catch (err) {
