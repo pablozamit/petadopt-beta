@@ -48,19 +48,37 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
   const throttledMarkAsReadRef = useRef(null);
   const unsubscribersRef = useRef([]);
   const debouncedUpdateUnreadRef = useRef(null);
+  const loadingTimeoutRef = useRef(null);
  
   // Listener en tiempo real para conversaciones 
   useEffect(() => { 
-    if (!currentUserId) return; 
+    if (!currentUserId) {
+      setLoading(false);
+      return; 
+    }
      
-    setLoading(true); 
+    setLoading(true);
+    
+    // ✅ TIMEOUT: Asegurar que loading no queda indefinidamente
+    loadingTimeoutRef.current = setTimeout(() => {
+      console.warn("Conversations listener timeout - setting loading to false");
+      setLoading(false);
+    }, 5000);
+    
     const unsubscribe = onUserConversationsChange(currentUserId, (convs) => { 
+      // Limpiar timeout si el listener finalmente se dispara
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
       setConversations(convs); 
       setLoading(false); 
     }); 
 
     unsubscribersRef.current.push(unsubscribe);
     return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
       unsubscribe();
     };
   }, [currentUserId]); 
@@ -210,6 +228,9 @@ export const useMessaging = (currentUserId, currentUserType, currentUserName) =>
   // ✅ NUEVO: Cleanup al desmontar
   useEffect(() => {
     return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
       unsubscribersRef.current.forEach(unsub => {
         if (typeof unsub === 'function') unsub();
       });
