@@ -1,4 +1,5 @@
 import React from "react";
+import { BrowserRouter } from "react-router-dom";
 import Routes from "./Routes";
 import Footer from "./components/ui/Footer";
 import CookieConsent from "./components/ui/CookieConsent";
@@ -7,12 +8,14 @@ import { AuthProvider } from "./hooks/useAuth";
 
 function App() {
   return (
-    <AuthProvider>
-      <Routes />
-      <Footer />
-      <CookieConsent />
-      <CookieSettingsButton />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes />
+        <Footer />
+        <CookieConsent />
+        <CookieSettingsButton />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
