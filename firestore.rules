@@ -11,6 +11,11 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == uid;
     }
     
+    function isShelterVerified(shelterId) {
+      let shelterDoc = get(/databases/$(database)/documents/users/$(shelterId));
+      return shelterDoc.data.role == 'shelter' && shelterDoc.data.verified == true;
+    }
+    
     function isConversationParticipant(conversationId) {
       let participants = get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
       return request.auth.uid in participants;
@@ -20,33 +25,43 @@ service cloud.firestore {
       return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
+    function isProfessional(uid) {
+      return get(/databases/$(database)/documents/professionals/$(uid)).data.verified == true;
+    }
+    
     // ======= USERS COLLECTION =======
+    // Contiene: usuarios normales, shelters/refugios, admins
     match /users/{userId} {
       // ✅ Usuario puede leer su propio perfil
       allow read: if isUser(userId);
       
-      // ✅ Usuario puede leer perfiles públicos de otros
-      allow read: if isAuthenticated() && resource.data.isPublic == true;
+      // ✅ Shelters y profesionales pueden ser leídos públicamente si están verificados
+      allow read: if isAuthenticated() && resource.data.verified == true && 
+                     (resource.data.role == 'shelter' || resource.data.role == 'admin');
       
       // ✅ Usuario puede actualizar su propio perfil
       allow update: if isUser(userId) && 
-                       // ✅ No permitir cambiar role
+                       // No permitir cambiar role
                        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
       
-      // ✅ Solo admin puede crear usuarios (normalmente es auth)
-      allow create: if false; // Crear usuarios desde Auth, no Firestore
+      // ✅ No permitir crear desde Firestore (vienen de Auth)
+      allow create: if false;
       
       // ✅ Solo admin puede borrar usuarios
       allow delete: if isAdmin();
+    }
+    
+    // ======= PETS COLLECTION =======
+    match /pets/{petId} {
+      // ✅ Todos pueden leer mascotas (página de adopción)
+      allow read: if isAuthenticated();
       
-      // ✅ Subcolección: user statistics
-      match /stats/{doc=**} {
-        allow read: if isUser(userId);
-        allow write: if isUser(userId);
-      }
+      // ✅ Solo shelters verificados pueden crear/actualizar/borrar
+      allow write: if isAuthenticated() && isShelterVerified(request.auth.uid);
     }
     
     // ======= CONVERSATIONS COLLECTION =======
+    // Permite chat entre usuarios y shelters
     match /conversations/{conversationId} {
       // ✅ Solo participantes pueden leer
       allow read: if isAuthenticated() && isConversationParticipant(conversationId);
@@ -54,7 +69,7 @@ service cloud.firestore {
       // ✅ Solo participantes pueden actualizar
       allow update: if isAuthenticated() && isConversationParticipant(conversationId);
       
-      // ✅ Crear conversación: ambos usuarios deben existir y ser autenticados
+      // ✅ Crear conversación: ambos usuarios deben existir
       allow create: if isAuthenticated() && 
                        request.resource.data.participants.hasAny([request.auth.uid]) &&
                        request.resource.data.participants.size() == 2;
@@ -62,7 +77,7 @@ service cloud.firestore {
       // ✅ Solo admin puede borrar
       allow delete: if isAdmin();
       
-      // ✅ Subcolección: Messages dentro de conversación
+      // ✅ SUBCOLECCIÓN: Mensajes dentro de conversación
       match /messages/{messageId} {
         // ✅ Solo participantes pueden leer mensajes
         allow read: if isAuthenticated() && isConversationParticipant(conversationId);
@@ -70,93 +85,68 @@ service cloud.firestore {
         // ✅ Crear mensaje: solo si eres participante
         allow create: if isAuthenticated() && 
                          isConversationParticipant(conversationId) &&
-                         // El senderId debe ser el usuario actual
                          request.resource.data.senderId == request.auth.uid &&
-                         // Validar campos requeridos
                          request.resource.data.text is string &&
                          request.resource.data.text.size() > 0 &&
-                         request.resource.data.senderName is string &&
-                         request.resource.data.createdAt is timestamp;
+                         request.resource.data.senderName is string;
         
-        // ✅ Actualizar: solo el remitente puede editar su mensaje, y solo para marcar como leído
+        // ✅ Actualizar: solo para marcar como leído
         allow update: if isAuthenticated() && 
                          isConversationParticipant(conversationId) && 
-                         // Solo permitir actualizar readBy
-                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']) &&
-                         // No permitir que el remitente borre el mensaje
-                         request.resource.data.senderId == resource.data.senderId;
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']);
         
-        // ✅ Borrar: solo admin o en 30 minutos después de crear
+        // ✅ Borrar: solo el remitente en los primeros 30 minutos o admin
         allow delete: if isAdmin() || 
                          (request.auth.uid == resource.data.senderId && 
                           request.time < resource.data.createdAt + duration.value(30, 'm'));
       }
     }
     
-    // ======= ERROR LOGS COLLECTION (Admin only) =======
-    match /error_logs/{logId} {
-      // ✅ Crear logs desde cliente (con limites)
-      allow create: if isAuthenticated() && 
-                       request.resource.data.userId == request.auth.uid;
+    // ======= PROFESSIONALS COLLECTION =======
+    // Coleccsión separada para veterinarios, educadores, peluqueros, etc.
+    match /professionals/{professionalId} {
+      // ✅ Todos pueden leer profesionales verificados
+      allow read: if isAuthenticated() && resource.data.verified == true;
       
-      // ✅ Solo admin puede leer logs
-      allow read: if isAdmin();
+      // ✅ Profesionales no verificados solo ellos pueden leer
+      allow read: if isUser(professionalId);
       
-      // ✅ Solo admin puede actualizar (resolver)
+      // ✅ Usuario puede crear su perfil como profesional
+      allow create: if isUser(professionalId) && 
+                       !request.resource.data.verified && // No puede auto-verificarse
+                       request.resource.data.specialization in ['vet', 'trainer', 'groomer', 'pet_shop', 'daycare', 'walker'];
+      
+      // ✅ Profesional puede actualizar su perfil (excepto verified)
+      allow update: if isUser(professionalId) && 
+                       !request.resource.data.diff(resource.data).affectedKeys().hasAny(['verified']);
+      
+      // ✅ Solo admin puede verificar profesionales
       allow update: if isAdmin();
       
       // ✅ Solo admin puede borrar
       allow delete: if isAdmin();
+      
+      // ✅ SUBCOLECCIÓN: Reviews de profesionales
+      match /reviews/{reviewId} {
+        allow read: if true; // Público
+        allow create: if isAuthenticated() && 
+                         request.resource.data.userId == request.auth.uid &&
+                         request.resource.data.rating is number &&
+                         request.resource.data.rating >= 1 && request.resource.data.rating <= 5;
+        allow delete: if request.auth.uid == resource.data.userId || isAdmin();
+      }
     }
     
-    // ======= ANIMALS COLLECTION =======
-    match /animals/{animalId} {
-      // ✅ Todos pueden leer animales públicos
-      allow read: if isAuthenticated();
+    // ======= ERROR LOGS COLLECTION =======
+    // Solo para admin - logueo de errores
+    match /error_logs/{logId} {
+      // ✅ Crear logs desde cliente (con limites)
+      allow create: if isAuthenticated();
       
-      // ✅ Protectoras/refugios pueden crear
-      allow create: if isAuthenticated() && 
-                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['protectora', 'refugio'] &&
-                       request.resource.data.organizationId == request.auth.uid;
-      
-      // ✅ Solo dueno puede actualizar
-      allow update: if isAuthenticated() && 
-                       resource.data.organizationId == request.auth.uid;
-      
-      // ✅ Solo dueno puede borrar
-      allow delete: if isAuthenticated() && 
-                       resource.data.organizationId == request.auth.uid;
-    }
-    
-    // ======= ADOPTIONS COLLECTION =======
-    match /adoptions/{adoptionId} {
-      // ✅ Usuario puede leer sus propias adopciones
-      allow read: if isAuthenticated() && 
-                     (resource.data.userId == request.auth.uid || 
-                      resource.data.organizationId == request.auth.uid);
-      
-      // ✅ Usuarios pueden crear solicitud de adopción
-      allow create: if isAuthenticated() && 
-                       request.resource.data.userId == request.auth.uid;
-      
-      // ✅ Org puede actualizar estado
-      allow update: if isAuthenticated() && 
-                       resource.data.organizationId == request.auth.uid;
-      
-      // ✅ No permitir borrar (mantener historial)
+      // ✅ Solo admin puede leer/actualizar/borrar
+      allow read: if isAdmin();
+      allow update: if isAdmin();
       allow delete: if isAdmin();
-    }
-    
-    // ======= FAVORITES COLLECTION =======
-    match /favorites/{userId} {
-      // ✅ Usuario puede leer sus favoritos
-      allow read: if isUser(userId);
-      
-      // ✅ Usuario puede actualizar sus favoritos
-      allow write: if isUser(userId);
-      
-      // ✅ No permitir borrar
-      allow delete: if false;
     }
     
     // ======= DEFAULT: DENY ALL =======
